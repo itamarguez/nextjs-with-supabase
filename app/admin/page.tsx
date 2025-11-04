@@ -128,7 +128,7 @@ export default async function AdminDashboard() {
         <CardContent>
           <div className="space-y-2">
             {Object.entries(modelCosts)
-              .sort(([, a], [, b]) => b - a)
+              .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(([model, cost]) => (
                 <div key={model} className="flex justify-between items-center">
                   <span className="font-medium">{model}</span>
