@@ -132,7 +132,7 @@ export default async function AdminDashboard() {
               .map(([model, cost]) => (
                 <div key={model} className="flex justify-between items-center">
                   <span className="font-medium">{model}</span>
-                  <Badge variant="secondary">${cost.toFixed(4)}</Badge>
+                  <Badge variant="secondary">${(cost as number).toFixed(4)}</Badge>
                 </div>
               ))}
           </div>
