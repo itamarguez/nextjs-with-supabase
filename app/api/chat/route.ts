@@ -20,6 +20,7 @@ import {
   updateConversationUsage,
   updateConversationTitle,
   generateConversationTitle,
+  getConversation,
 } from '@/lib/supabase/conversations';
 
 export const runtime = 'edge';
@@ -122,10 +123,15 @@ export async function POST(req: NextRequest) {
     const startTime = Date.now();
     await addMessage(conversationId, 'user', message);
 
-    // Update conversation title if this is the first message
-    if (recentMessages.length === 0) {
+    // Update conversation title if:
+    // 1. This is the first message (recentMessages.length === 0), OR
+    // 2. Title is still "New Conversation" (safety net for old conversations)
+    const conversation = await getConversation(conversationId, user.id);
+    const shouldUpdateTitle = recentMessages.length === 0 || conversation?.title === 'New Conversation';
+
+    if (shouldUpdateTitle) {
       const title = generateConversationTitle(message);
-      console.log(`Updating conversation title to: "${title}"`);
+      console.log(`Updating conversation title from "${conversation?.title}" to: "${title}"`);
       await updateConversationTitle(conversationId, user.id, title);
     }
 
