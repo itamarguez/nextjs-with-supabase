@@ -46,7 +46,8 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 
   return (
     <div className="border-t border-border bg-background p-4">
-      <div className="flex gap-2">
+      <div className="mx-auto max-w-4xl">
+        <div className="flex gap-2">
         <textarea
           ref={textareaRef}
           value={message}
@@ -68,10 +69,11 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         </Button>
       </div>
 
-      <div className="mt-2 text-xs text-muted-foreground">
-        Press <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> to send,{' '}
-        <kbd className="rounded bg-muted px-1.5 py-0.5">Shift</kbd> +{' '}
-        <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> for new line
+        <div className="mt-2 text-xs text-muted-foreground">
+          Press <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> to send,{' '}
+          <kbd className="rounded bg-muted px-1.5 py-0.5">Shift</kbd> +{' '}
+          <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> for new line
+        </div>
       </div>
     </div>
   );

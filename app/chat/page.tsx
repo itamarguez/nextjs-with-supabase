@@ -320,9 +320,9 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <div className="w-64 hidden md:block border-r">
+      <div className="w-64 hidden md:flex flex-col border-r bg-background">
         <div className="flex flex-col h-full">
           {/* Premium Credit Indicator (only for free tier) */}
           <div className="p-4 border-b">
@@ -348,7 +348,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {limitReached ? (
           <div className="flex h-full items-center justify-center p-4">
             <LimitReached

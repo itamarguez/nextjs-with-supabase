@@ -20,9 +20,9 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto px-4">
       {messages.length === 0 ? (
-        <div className="flex h-full items-center justify-center p-8 text-center">
+        <div className="flex h-full items-center justify-center p-4 md:p-8 text-center">
           <div className="space-y-4">
             <div className="text-6xl">💬</div>
             <div className="space-y-2">
@@ -36,7 +36,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
           </div>
         </div>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="mx-auto max-w-4xl divide-y divide-border">
           {messages.map((message) => (
             <Message key={message.id} message={message} />
           ))}
