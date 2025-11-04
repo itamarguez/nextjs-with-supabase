@@ -333,12 +333,14 @@ export default function ChatPage() {
             />
           </div>
 
-          <ConversationList
-            conversations={conversations}
-            currentConversationId={currentConversationId || undefined}
-            onSelect={setCurrentConversationId}
-            onNew={createNewConversation}
-          />
+          <div className="flex-1 overflow-hidden">
+            <ConversationList
+              conversations={conversations}
+              currentConversationId={currentConversationId || undefined}
+              onSelect={setCurrentConversationId}
+              onNew={createNewConversation}
+            />
+          </div>
 
           {/* Logout Button at Bottom */}
           <div className="mt-auto p-4 border-t">
