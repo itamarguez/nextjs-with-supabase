@@ -15,6 +15,7 @@ import {
   incrementPremiumRequest,
   getTierLimits,
 } from '@/lib/rate-limiter';
+import { checkIPRateLimit, getClientIP, IP_RATE_LIMITS } from '@/lib/ip-rate-limiter';
 import { addMessage, getRecentMessages } from '@/lib/supabase/messages';
 import {
   updateConversationUsage,
@@ -27,6 +28,27 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
+    // IP-based rate limiting (prevent DDoS)
+    const clientIP = getClientIP(req);
+    const ipRateLimit = checkIPRateLimit(clientIP, IP_RATE_LIMITS.chat);
+
+    if (!ipRateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests from this IP',
+          retryAfter: ipRateLimit.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(ipRateLimit.retryAfter),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(Math.floor(ipRateLimit.resetTime / 1000)),
+          },
+        }
+      );
+    }
+
     // Get authenticated user
     const supabase = await createClient();
     const {

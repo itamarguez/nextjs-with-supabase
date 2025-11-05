@@ -17,9 +17,18 @@ export default async function AdminDashboard() {
     redirect('/auth/login');
   }
 
-  // TODO: Add proper admin role check
-  // For now, we'll just show the dashboard to any authenticated user
-  // In production, check if user.email matches your admin email or has admin role
+  // Admin role check - only allow specific admin email
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  if (!adminEmail) {
+    console.error('ADMIN_EMAIL environment variable not set');
+    redirect('/chat');
+  }
+
+  if (user.email !== adminEmail) {
+    console.warn(`Unauthorized admin access attempt by: ${user.email}`);
+    redirect('/chat');
+  }
 
   // Fetch analytics data
   const { data: allProfiles } = await supabase
