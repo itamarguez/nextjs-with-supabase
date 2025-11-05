@@ -85,17 +85,19 @@ export async function updateConversationTitle(
 ): Promise<boolean> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('conversations')
     .update({ title })
     .eq('id', conversationId)
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .select();
 
   if (error) {
     console.error('Error updating conversation title:', error);
     return false;
   }
 
+  console.log('Title update result:', data);
   return true;
 }
 
