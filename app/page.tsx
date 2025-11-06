@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { TrialChat } from '@/components/landing/trial-chat';
 import { createClient } from '@/lib/supabase/server';
 import { Zap, Brain, DollarSign, Shield, ArrowRight } from 'lucide-react';
 
@@ -43,28 +44,31 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="mx-auto max-w-3xl space-y-6">
-          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
-            Stop Choosing.
-            <br />
-            <span className="text-primary">Get the Best Answer.</span>
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            NoMoreFOMO automatically selects the perfect AI model for every prompt.
-            No more guessing which LLM to use - we pick the best one based on task type,
-            performance rankings, and cost efficiency.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button asChild size="lg">
-              <Link href={user ? '/chat' : '/auth/sign-up'}>
-                Start Chatting <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="#how-it-works">Learn More</Link>
-            </Button>
+      {/* Hero Section with Trial Chat */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-6xl">
+          {/* Headline */}
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              Stop Choosing.
+              <br />
+              <span className="text-primary">Get the Best Answer.</span>
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
+              Try it now - no signup required! We automatically select the perfect AI model for your prompt.
+            </p>
+          </div>
+
+          {/* Trial Chat Widget */}
+          <div className="mb-8">
+            <TrialChat />
+          </div>
+
+          {/* Social Proof */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Join hundreds of users who've ditched the model-switching game
+            </p>
           </div>
         </div>
       </section>
