@@ -24,10 +24,14 @@ export function TrialChat() {
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom (only within chat container, not the whole page)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      // Scroll the messages container to bottom
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages, streamingMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,7 +155,7 @@ export function TrialChat() {
         </div>
 
         {/* Messages */}
-        <div className="h-[400px] overflow-y-auto p-4">
+        <div ref={messagesContainerRef} className="h-[400px] overflow-y-auto p-4">
           {messages.length === 0 && !streamingMessage ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="space-y-4">
