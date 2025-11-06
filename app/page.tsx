@@ -45,7 +45,7 @@ export default async function HomePage() {
       </header>
 
       {/* Hero Section with Trial Chat */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-12" id="hero">
         <div className="mx-auto max-w-6xl">
           {/* Headline */}
           <div className="mb-8 text-center">
@@ -60,8 +60,16 @@ export default async function HomePage() {
           </div>
 
           {/* Trial Chat Widget */}
-          <div className="mb-8">
+          <div className="mb-8 scroll-mt-24">
             <TrialChat />
+          </div>
+
+          {/* Visual Example - How It Works */}
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm">
+              <span className="text-primary">✨</span>
+              <span className="font-medium">See which model answered your question - shown after every response!</span>
+            </div>
           </div>
 
           {/* Social Proof */}
@@ -131,8 +139,123 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Visual Example - See Model Selection in Action */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-bold">See Model Selection in Action</h2>
+          <p className="mt-2 text-muted-foreground">
+            Every response shows which AI model answered and why
+          </p>
+        </div>
+
+        <div className="mx-auto max-w-4xl space-y-6">
+          {/* Example 1: Coding Question */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/50">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                  👤
+                </div>
+                <div>
+                  <p className="text-sm">Write a Python function to check if a number is prime</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                  🤖
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm mb-2">Here's an efficient prime number checker...</p>
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                    <Badge variant="secondary" className="text-xs">claude-3-5-haiku</Badge>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">coding</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-primary font-medium">Chosen for best coding performance</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Example 2: Creative Question */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/50">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                  👤
+                </div>
+                <div>
+                  <p className="text-sm">Write a haiku about artificial intelligence</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                  🤖
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm mb-2">Silicon minds awake / Learning patterns in the dark / Future speaks to us</p>
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                    <Badge variant="secondary" className="text-xs">gpt-4o-mini</Badge>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">creative</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-primary font-medium">Top-ranked for creative tasks</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Example 3: Math Question */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/50">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                  👤
+                </div>
+                <div>
+                  <p className="text-sm">Solve: What's the derivative of x² + 3x + 5?</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                  🤖
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm mb-2">The derivative is 2x + 3. Using the power rule...</p>
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                    <Badge variant="secondary" className="text-xs">gemini-2.0-flash-thinking</Badge>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">math</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-primary font-medium">Best for mathematical reasoning</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-12 text-center">
+          <div className="inline-flex flex-col gap-2 rounded-lg border bg-card p-6">
+            <div className="text-2xl">🎯</div>
+            <h3 className="font-semibold">No More Guessing</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              You'll always know which model answered your question and why it was the best choice for that specific task.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
-      <section id="how-it-works" className="container mx-auto px-4 py-20">
+      <section id="how-it-works" className="container mx-auto px-4 py-20 bg-muted/30">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold">How It Works</h2>
           <p className="mt-2 text-muted-foreground">
@@ -172,7 +295,7 @@ export default async function HomePage() {
             <div>
               <h3 className="font-semibold">Best model selected</h3>
               <p className="text-sm text-muted-foreground">
-                We pick the top-ranked model for your tier and task category
+                We pick the top-ranked model for your tier and task category based on LMArena rankings
               </p>
             </div>
           </div>
@@ -184,7 +307,7 @@ export default async function HomePage() {
             <div>
               <h3 className="font-semibold">You get the answer</h3>
               <p className="text-sm text-muted-foreground">
-                See which model answered and why it was chosen for your task
+                See which model answered and why it was chosen for your task - transparency built in!
               </p>
             </div>
           </div>
