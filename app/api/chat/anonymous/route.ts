@@ -6,11 +6,13 @@ import { cookies } from 'next/headers';
 import { selectModelForPrompt } from '@/lib/llm/model-selector';
 import { routeToLLM } from '@/lib/llm/router';
 import { checkIPRateLimit, getClientIP, IP_RATE_LIMITS } from '@/lib/ip-rate-limiter';
+import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'edge';
 
 const MAX_FREE_MESSAGES = 3;
 const COOKIE_NAME = 'nomorefomo_trial_count';
+const SESSION_COOKIE_NAME = 'nomorefomo_session_id';
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,6 +51,16 @@ export async function POST(req: NextRequest) {
     const trialCountCookie = cookieStore.get(COOKIE_NAME);
     const currentCount = trialCountCookie ? parseInt(trialCountCookie.value, 10) : 0;
 
+    // Get or create session ID for tracking anonymous conversations
+    let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    if (!sessionId) {
+      // Generate new session ID
+      sessionId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    }
+
+    // Get user agent for analytics
+    const userAgent = req.headers.get('user-agent') || 'unknown';
+
     // Check if user has exceeded free message limit
     if (currentCount >= MAX_FREE_MESSAGES) {
       return NextResponse.json(
@@ -71,6 +83,8 @@ export async function POST(req: NextRequest) {
 
     // Route to LLM
     const encoder = new TextEncoder();
+    const startTime = Date.now();
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -105,6 +119,28 @@ export async function POST(req: NextRequest) {
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify(streamData)}\n\n`)
             );
+          }
+
+          const latencyMs = Date.now() - startTime;
+
+          // Store conversation in database for analytics
+          try {
+            const supabase = await createClient();
+            await supabase.from('anonymous_conversations').insert({
+              session_id: sessionId,
+              user_prompt: message,
+              assistant_response: fullResponse,
+              model_used: modelSelection.model,
+              task_category: modelSelection.category,
+              selection_reason: modelSelection.reason,
+              latency_ms: latencyMs,
+              ip_address: clientIP,
+              user_agent: userAgent,
+              // tokens_used and cost_usd can be calculated later if needed
+            });
+          } catch (dbError) {
+            // Don't fail the request if DB write fails - log it
+            console.error('Failed to store anonymous conversation:', dbError);
           }
 
           // Send completion
@@ -142,9 +178,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Set updated cookie (expires in 24 hours)
-    const cookieHeader = `${COOKIE_NAME}=${newCount}; Path=/; Max-Age=86400; SameSite=Lax`;
-    response.headers.append('Set-Cookie', cookieHeader);
+    // Set updated cookies (expires in 24 hours)
+    const countCookieHeader = `${COOKIE_NAME}=${newCount}; Path=/; Max-Age=86400; SameSite=Lax`;
+    response.headers.append('Set-Cookie', countCookieHeader);
+
+    // Set session ID cookie (expires in 30 days) - persists longer to track user across visits
+    const sessionCookieHeader = `${SESSION_COOKIE_NAME}=${sessionId}; Path=/; Max-Age=2592000; SameSite=Lax`;
+    response.headers.append('Set-Cookie', sessionCookieHeader);
 
     return response;
   } catch (error) {
