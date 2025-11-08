@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -10,19 +10,43 @@ import { createClient } from '@/lib/supabase/client';
  */
 export function AuthRedirect() {
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
 
-      if (user) {
-        router.push('/chat');
+        // Use getSession for more reliable client-side auth check
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          // User is authenticated, redirect to chat
+          router.replace('/chat');
+        } else {
+          // Not authenticated, stay on landing page
+          setChecking(false);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setChecking(false);
       }
     };
 
-    checkAuth();
+    // Small delay to let browser settle (helps with Safari)
+    const timer = setTimeout(checkAuth, 100);
+
+    return () => clearTimeout(timer);
   }, [router]);
+
+  // Don't show anything while checking (prevents flash)
+  if (checking) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return null;
 }
