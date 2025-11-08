@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { TrialChat } from '@/components/landing/trial-chat';
-import { AuthRedirect } from '@/components/auth-redirect';
 import { createClient } from '@/lib/supabase/server';
 import { Zap, Brain, DollarSign, Shield, ArrowRight } from 'lucide-react';
 
@@ -20,15 +19,8 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect authenticated users directly to chat
-  if (user) {
-    redirect('/chat');
-  }
-
   return (
     <div className="min-h-screen">
-      {/* Client-side auth redirect for Safari compatibility */}
-      <AuthRedirect />
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -56,40 +48,71 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section with Trial Chat */}
+      {/* Hero Section */}
       <section className="container mx-auto px-4 py-12" id="hero">
         <div className="mx-auto max-w-6xl">
-          {/* Headline */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Stop Choosing.
-              <br />
-              <span className="text-primary">Get the Best Answer.</span>
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
-              Try it now - no signup required! We automatically select the perfect AI model for your prompt.
-            </p>
-          </div>
+          {user ? (
+            // Logged-in user: Show welcome and chat button
+            <div className="text-center">
+              <div className="mb-8">
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                  Welcome Back! 👋
+                </h1>
+                <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
+                  Ready to chat with the best AI models? We'll automatically pick the perfect one for each question.
+                </p>
+              </div>
 
-          {/* Trial Chat Widget */}
-          <div className="mb-8 scroll-mt-24">
-            <TrialChat />
-          </div>
+              <div className="mb-8">
+                <Button asChild size="lg" className="text-lg px-8 py-6">
+                  <Link href="/chat">
+                    Continue to Chat <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
 
-          {/* Visual Example - How It Works */}
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm">
-              <span className="text-primary">✨</span>
-              <span className="font-medium">See which model answered your question - shown after every response!</span>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Your conversations are waiting for you
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Anonymous user: Show trial chat
+            <>
+              {/* Headline */}
+              <div className="mb-8 text-center">
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                  Stop Choosing.
+                  <br />
+                  <span className="text-primary">Get the Best Answer.</span>
+                </h1>
+                <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
+                  Try it now - no signup required! We automatically select the perfect AI model for your prompt.
+                </p>
+              </div>
 
-          {/* Social Proof */}
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Join hundreds of users who've ditched the model-switching game
-            </p>
-          </div>
+              {/* Trial Chat Widget */}
+              <div className="mb-8 scroll-mt-24">
+                <TrialChat />
+              </div>
+
+              {/* Visual Example - How It Works */}
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm">
+                  <span className="text-primary">✨</span>
+                  <span className="font-medium">See which model answered your question - shown after every response!</span>
+                </div>
+              </div>
+
+              {/* Social Proof */}
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Join hundreds of users who've ditched the model-switching game
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
