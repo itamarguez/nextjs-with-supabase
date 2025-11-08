@@ -10,6 +10,9 @@ import { TrialChat } from '@/components/landing/trial-chat';
 import { createClient } from '@/lib/supabase/server';
 import { Zap, Brain, DollarSign, Shield, ArrowRight } from 'lucide-react';
 
+// Force dynamic rendering to check auth on every request
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const supabase = await createClient();
   const {
