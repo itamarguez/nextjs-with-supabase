@@ -1,7 +1,7 @@
 // OAuth callback handler
-import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   if (code) {
     const cookieStore = await cookies();
 
-    // Create Supabase client with cookie handling
+    // Create response first
+    const response = NextResponse.redirect(`${origin}/chat`);
+
+    // Create Supabase client with cookie handling that writes to response
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -21,19 +24,16 @@ export async function GET(request: NextRequest) {
             return cookieStore.getAll();
           },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // Ignore - happens in middleware
-            }
+            // Set cookies on the response object, not just cookieStore
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
           },
         },
       }
     );
 
-    // Exchange code for session
+    // Exchange code for session - this will call setAll() and add cookies to response
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      // Redirect to chat page - cookies are already set
-      return NextResponse.redirect(`${origin}/chat`);
+      // Return response with cookies set
+      return response;
     }
   }
 
