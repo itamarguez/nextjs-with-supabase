@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { TrialChat } from '@/components/landing/trial-chat';
+import { AuthRedirect } from '@/components/auth-redirect';
 import { createClient } from '@/lib/supabase/server';
 import { Zap, Brain, DollarSign, Shield, ArrowRight } from 'lucide-react';
 
@@ -26,6 +27,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* Client-side auth redirect for Safari compatibility */}
+      <AuthRedirect />
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
