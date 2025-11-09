@@ -26,6 +26,25 @@ export function TrialChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // Check trial status on mount
+  useEffect(() => {
+    const checkTrialStatus = async () => {
+      try {
+        const response = await fetch('/api/chat/trial-status');
+        if (response.ok) {
+          const data = await response.json();
+          setMessagesRemaining(data.messagesRemaining);
+          if (data.limitReached) {
+            setShowSignupPrompt(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check trial status:', error);
+      }
+    };
+    checkTrialStatus();
+  }, []);
+
   // Auto-scroll to bottom (only within chat container, not the whole page)
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -73,6 +92,7 @@ export function TrialChat() {
       const decoder = new TextDecoder();
       let assistantMessage = '';
       let modelInfo = { model: '', category: '' };
+      let shouldShowSignup = false;
 
       if (reader) {
         while (true) {
@@ -94,8 +114,9 @@ export function TrialChat() {
                 setStreamingMessage(assistantMessage);
               } else if (data.type === 'done') {
                 setMessagesRemaining(data.messagesRemaining);
+                // Don't show signup yet - wait until message is displayed
                 if (data.limitReached) {
-                  setShowSignupPrompt(true);
+                  shouldShowSignup = true;
                 }
                 break;
               } else if (data.type === 'error') {
@@ -117,6 +138,14 @@ export function TrialChat() {
 
       setMessages((prev) => [...prev, finalMessage]);
       setStreamingMessage('');
+
+      // Show signup prompt AFTER message is added to state
+      // Add small delay to ensure message is rendered
+      if (shouldShowSignup) {
+        setTimeout(() => {
+          setShowSignupPrompt(true);
+        }, 500); // 500ms delay so user can see the final message
+      }
     } catch (error) {
       console.error('Chat error:', error);
       alert('Failed to send message. Please try again.');
