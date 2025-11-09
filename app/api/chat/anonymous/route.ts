@@ -7,6 +7,7 @@ import { selectModelForPrompt } from '@/lib/llm/model-selector';
 import { routeToLLM } from '@/lib/llm/router';
 import { checkIPRateLimit, getClientIP, IP_RATE_LIMITS } from '@/lib/ip-rate-limiter';
 import { createClient } from '@/lib/supabase/server';
+import { parseUserAgent, getCountryFromIP } from '@/lib/analytics/device-detector';
 
 export const runtime = 'edge';
 
@@ -58,8 +59,15 @@ export async function POST(req: NextRequest) {
       sessionId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     }
 
-    // Get user agent for analytics
+    // Get user agent and referrer for analytics
     const userAgent = req.headers.get('user-agent') || 'unknown';
+    const referrer = req.headers.get('referer') || req.headers.get('referrer');
+
+    // Parse user agent for device/browser info
+    const deviceInfo = parseUserAgent(userAgent);
+
+    // Get country from IP (async)
+    const countryCodePromise = getCountryFromIP(clientIP);
 
     // Check if user has exceeded free message limit
     if (currentCount >= MAX_FREE_MESSAGES) {
@@ -123,7 +131,10 @@ export async function POST(req: NextRequest) {
 
           const latencyMs = Date.now() - startTime;
 
-          // Store conversation in database for analytics
+          // Get country code from IP
+          const countryCode = await countryCodePromise;
+
+          // Store conversation in database for analytics with full metadata
           try {
             const supabase = await createClient();
             await supabase.from('anonymous_conversations').insert({
@@ -136,6 +147,11 @@ export async function POST(req: NextRequest) {
               latency_ms: latencyMs,
               ip_address: clientIP,
               user_agent: userAgent,
+              device_type: deviceInfo.deviceType,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+              country_code: countryCode || undefined,
+              referrer: referrer || undefined,
               // tokens_used and cost_usd can be calculated later if needed
             });
           } catch (dbError) {
