@@ -65,12 +65,12 @@ export default async function HomePage() {
           {/* Headline */}
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Stop Choosing.
+              Stop the LLM FOMO.
               <br />
               <span className="text-primary">Get the Best Answer.</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
-              Try it now - no signup required! We automatically select the perfect AI model for your prompt.
+              Try it now for free! We automatically select the perfect AI model for your prompt.
             </p>
           </div>
 
@@ -106,7 +106,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <Brain className="h-10 w-10 text-primary" />
@@ -139,17 +139,6 @@ export default async function HomePage() {
                 </CardDescription>
               </CardHeader>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <Shield className="h-10 w-10 text-primary" />
-                <CardTitle>Abuse Protection</CardTitle>
-                <CardDescription>
-                  Built-in rate limiting and abuse detection keeps the platform
-                  fair and costs sustainable for everyone.
-                </CardDescription>
-              </CardHeader>
-            </Card>
           </div>
         </div>
       </section>
@@ -163,99 +152,105 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="mx-auto max-w-4xl space-y-6">
-          {/* Example 1: Coding Question */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
-                  👤
-                </div>
-                <div>
-                  <p className="text-sm">Write a Python function to check if a number is prime</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  🤖
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm mb-2">Here's an efficient prime number checker...</p>
-                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
-                    <Badge variant="secondary" className="text-xs">claude-3-5-haiku</Badge>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">coding</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-primary font-medium">Chosen for best coding performance</span>
+        <div className="mx-auto max-w-5xl space-y-8">
+          {/* Example 1: Coding Question - Left aligned */}
+          <div className="flex justify-start">
+            <Card className="overflow-hidden max-w-2xl w-full">
+              <CardHeader className="bg-muted/50">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                    👤
+                  </div>
+                  <div>
+                    <p className="text-sm">Write a Python function to check if a number is prime</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                    🤖
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm mb-2">Here's an efficient prime number checker...</p>
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                      <Badge variant="secondary" className="text-xs">claude-3-5-haiku</Badge>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">coding</span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-primary font-medium">Chosen for best coding performance</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Example 2: Creative Question */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
-                  👤
-                </div>
-                <div>
-                  <p className="text-sm">Write a haiku about artificial intelligence</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  🤖
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm mb-2">Silicon minds awake / Learning patterns in the dark / Future speaks to us</p>
-                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
-                    <Badge variant="secondary" className="text-xs">gpt-4o-mini</Badge>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">creative</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-primary font-medium">Top-ranked for creative tasks</span>
+          {/* Example 2: Creative Question - Right aligned */}
+          <div className="flex justify-end">
+            <Card className="overflow-hidden max-w-2xl w-full">
+              <CardHeader className="bg-muted/50">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                    👤
+                  </div>
+                  <div>
+                    <p className="text-sm">Write a haiku about artificial intelligence</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                    🤖
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm mb-2">Silicon minds awake / Learning patterns in the dark / Future speaks to us</p>
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                      <Badge variant="secondary" className="text-xs">gpt-4o-mini</Badge>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">creative</span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-primary font-medium">Top-ranked for creative tasks</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Example 3: Math Question */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
-                  👤
-                </div>
-                <div>
-                  <p className="text-sm">Solve: What's the derivative of x² + 3x + 5?</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  🤖
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm mb-2">The derivative is 2x + 3. Using the power rule...</p>
-                  <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
-                    <Badge variant="secondary" className="text-xs">gemini-2.0-flash-thinking</Badge>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">math</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-primary font-medium">Best for mathematical reasoning</span>
+          {/* Example 3: Math Question - Left aligned */}
+          <div className="flex justify-start">
+            <Card className="overflow-hidden max-w-2xl w-full">
+              <CardHeader className="bg-muted/50">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
+                    👤
+                  </div>
+                  <div>
+                    <p className="text-sm">Solve: What's the derivative of x² + 3x + 5?</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                    🤖
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm mb-2">The derivative is 2x + 3. Using the power rule...</p>
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs border border-primary/20">
+                      <Badge variant="secondary" className="text-xs">gemini-2.0-flash-thinking</Badge>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">math</span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-primary font-medium">Best for mathematical reasoning</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <div className="mt-12 text-center">
@@ -368,17 +363,18 @@ export default async function HomePage() {
               <CardHeader>
                 <Badge className="w-fit">Most Popular</Badge>
                 <CardTitle className="mt-2">Pro</CardTitle>
-                <CardDescription>For power users and developers</CardDescription>
+                <CardDescription>For power users and professionals</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$20</span>
+                  <span className="text-4xl font-bold">$12</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
-                  <li>✓ 1M tokens/month</li>
-                  <li>✓ 2,000 requests/day</li>
-                  <li>✓ All Free models + Claude Haiku</li>
+                  <li>✓ 500K tokens/month</li>
+                  <li>✓ 1,000 requests/day</li>
+                  <li>✓ GPT-4o & Claude Sonnet</li>
+                  <li>✓ All budget models included</li>
                   <li>✓ Larger context (32K)</li>
                   <li>✓ Priority support</li>
                 </ul>
@@ -391,24 +387,26 @@ export default async function HomePage() {
             {/* Unlimited Tier */}
             <Card>
               <CardHeader>
-                <CardTitle>Unlimited</CardTitle>
-                <CardDescription>For teams and heavy users</CardDescription>
+                <Badge className="w-fit" variant="secondary">Coming Soon</Badge>
+                <CardTitle className="mt-2">Unlimited</CardTitle>
+                <CardDescription>Advanced features for power users</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$100</span>
+                  <span className="text-4xl font-bold">$49</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
-                  <li>✓ Unlimited tokens</li>
-                  <li>✓ 10,000 requests/day</li>
-                  <li>✓ GPT-4o & Claude Sonnet</li>
+                  <li>✓ 5M tokens/month</li>
+                  <li>✓ 5,000 requests/day</li>
+                  <li>✓ All Pro models + premium access</li>
                   <li>✓ Max context (200K)</li>
-                  <li>✓ Priority queue</li>
+                  <li>✓ Deep search (coming soon)</li>
+                  <li>✓ Image generation (coming soon)</li>
                   <li>✓ Dedicated support</li>
                 </ul>
                 <Button asChild className="w-full" variant="outline">
-                  <Link href="/auth/sign-up">Get Unlimited</Link>
+                  <Link href="/auth/sign-up">Join Early Access</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -419,7 +417,7 @@ export default async function HomePage() {
       {/* CTA */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="mx-auto max-w-2xl space-y-6">
-          <h2 className="text-4xl font-bold">Ready to Stop Choosing?</h2>
+          <h2 className="text-4xl font-bold">Wondering which is the best LLM for you?</h2>
           <p className="text-xl text-muted-foreground">
             Join NoMoreFOMO and let AI pick the best AI for you.
           </p>
