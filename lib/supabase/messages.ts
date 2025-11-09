@@ -17,6 +17,13 @@ export async function addMessage(
     tokens_used?: number;
     cost_usd?: number;
     latency_ms?: number;
+    ip_address?: string;
+    user_agent?: string;
+    device_type?: string;
+    browser?: string;
+    os?: string;
+    country_code?: string;
+    referrer?: string;
   }
 ): Promise<Message | null> {
   const supabase = await createClient();

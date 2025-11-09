@@ -23,6 +23,7 @@ import {
   generateConversationTitle,
   getConversation,
 } from '@/lib/supabase/conversations';
+import { parseUserAgent, getCountryFromIP } from '@/lib/analytics/device-detector';
 
 export const runtime = 'edge';
 
@@ -84,9 +85,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get IP and User-Agent for abuse detection
-    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
+    // Get IP and User-Agent for abuse detection AND analytics
+    const ipAddress = getClientIP(req);
     const userAgent = req.headers.get('user-agent');
+    const referrer = req.headers.get('referer') || req.headers.get('referrer');
+
+    // Parse user agent for device/browser info
+    const deviceInfo = parseUserAgent(userAgent);
+
+    // Get country from IP (async, but we'll await it when saving messages)
+    const countryCodePromise = getCountryFromIP(ipAddress);
 
     // Detect abuse
     const abuseCheck = await detectAbuse(
@@ -141,9 +149,20 @@ export async function POST(req: NextRequest) {
     // Record request for rate limiting
     await recordRequest(user.id);
 
-    // Save user message to database
+    // Get country code from IP
+    const countryCode = await countryCodePromise;
+
+    // Save user message to database with full metadata
     const startTime = Date.now();
-    await addMessage(conversationId, 'user', message);
+    await addMessage(conversationId, 'user', message, {
+      ip_address: ipAddress || undefined,
+      user_agent: userAgent || undefined,
+      device_type: deviceInfo.deviceType,
+      browser: deviceInfo.browser,
+      os: deviceInfo.os,
+      country_code: countryCode || undefined,
+      referrer: referrer || undefined,
+    });
 
     // Update conversation title if:
     // 1. This is the first message (recentMessages.length === 0), OR
@@ -206,7 +225,7 @@ export async function POST(req: NextRequest) {
 
               const latencyMs = Date.now() - startTime;
 
-              // Save assistant message to database
+              // Save assistant message to database with full metadata
               await addMessage(conversationId, 'assistant', fullResponse, {
                 model_used: modelSelection.model,
                 task_category: modelSelection.category,
@@ -214,6 +233,13 @@ export async function POST(req: NextRequest) {
                 tokens_used: inputTokens + outputTokens,
                 cost_usd: cost,
                 latency_ms: latencyMs,
+                ip_address: ipAddress || undefined,
+                user_agent: userAgent || undefined,
+                device_type: deviceInfo.deviceType,
+                browser: deviceInfo.browser,
+                os: deviceInfo.os,
+                country_code: countryCode || undefined,
+                referrer: referrer || undefined,
               });
 
               // Update conversation and user usage stats (admin only)
