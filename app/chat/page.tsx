@@ -13,6 +13,8 @@ import { recommendTierUpgrade } from '@/lib/llm/model-selector';
 import { PremiumCreditIndicator } from '@/components/chat/premium-credit-indicator';
 import { StrategyPrompt } from '@/components/chat/strategic-upgrade-prompts';
 import { LogoutButton } from '@/components/logout-button';
+import { PageViewTracker } from '@/components/analytics/page-view-tracker';
+import { Analytics } from '@/lib/analytics/tracker';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -181,6 +183,12 @@ export default function ChatPage() {
 
     setMessages((prev) => [...prev, userMessage]);
 
+    // Track analytics for first message
+    if (messages.filter((m) => m.role === 'user').length === 0) {
+      Analytics.firstMessageSent();
+      Analytics.conversationStarted();
+    }
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -321,6 +329,8 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Analytics tracking */}
+      <PageViewTracker />
       {/* Sidebar */}
       <div className="w-64 hidden md:flex flex-col border-r bg-background">
         <div className="flex flex-col h-full">

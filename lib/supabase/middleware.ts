@@ -47,11 +47,23 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
+  // Allow anonymous access to certain paths
+  const publicPaths = [
+    "/",
+    "/login",
+    "/auth",
+    "/api/chat/anonymous",
+    "/api/chat/trial-status",
+    "/api/analytics", // Allow analytics tracking for anonymous users
+  ];
+
+  const isPublicPath = publicPaths.some(path =>
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path)
+  );
+
   if (
-    request.nextUrl.pathname !== "/" &&
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !isPublicPath
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();

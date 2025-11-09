@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { Analytics } from '@/lib/analytics/tracker';
 
 interface Message {
   id: string;
@@ -37,9 +38,13 @@ export function TrialChat() {
           if (data.limitReached) {
             setShowSignupPrompt(true);
           }
+        } else {
+          // If the endpoint fails, just use default value (3 messages)
+          console.warn('Trial status check failed, using default');
         }
       } catch (error) {
-        console.error('Failed to check trial status:', error);
+        // Fail silently and use default trial count
+        console.warn('Failed to check trial status, using default:', error);
       }
     };
     checkTrialStatus();
@@ -69,6 +74,13 @@ export function TrialChat() {
     setIsLoading(true);
     setStreamingMessage('');
 
+    // Track trial event analytics
+    const messageNumber = messages.filter((m) => m.role === 'user').length + 1;
+    if (messageNumber === 1) {
+      Analytics.trialStarted();
+    }
+    Analytics.trialMessageSent(messageNumber);
+
     try {
       const response = await fetch('/api/chat/anonymous', {
         method: 'POST',
@@ -78,6 +90,7 @@ export function TrialChat() {
 
       if (response.status === 403) {
         // Free trial limit reached
+        Analytics.trialLimitReached();
         setShowSignupPrompt(true);
         setIsLoading(false);
         return;
@@ -267,7 +280,7 @@ export function TrialChat() {
               You've used all 3 free trial messages. Sign up to keep chatting with the best AI models, automatically selected for each task.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button asChild size="lg">
+              <Button asChild size="lg" onClick={() => Analytics.signupClicked('trial_chat_limit')}>
                 <Link href="/auth/sign-up">Sign Up - It's Free!</Link>
               </Button>
               <Button asChild variant="outline" size="lg">

@@ -10,6 +10,7 @@ import { TrialChat } from '@/components/landing/trial-chat';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { createClient } from '@/lib/supabase/server';
 import { Zap, Brain, DollarSign, Shield, ArrowRight } from 'lucide-react';
+import { PageViewTracker } from '@/components/analytics/page-view-tracker';
 
 // Force dynamic rendering to check auth on every request
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* Analytics tracking */}
+      <PageViewTracker />
       {/* Client-side auth redirect for Safari compatibility */}
       <AuthRedirect />
       {/* Header */}
