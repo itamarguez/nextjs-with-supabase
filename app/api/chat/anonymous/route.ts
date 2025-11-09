@@ -194,12 +194,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Set updated cookies (expires in 24 hours)
-    const countCookieHeader = `${COOKIE_NAME}=${newCount}; Path=/; Max-Age=86400; SameSite=Lax`;
+    // Determine if we're in production (HTTPS)
+    const isProduction = req.headers.get('x-forwarded-proto') === 'https';
+    const secureFlag = isProduction ? ' Secure;' : '';
+
+    // Set updated cookies with proper attributes
+    // Trial count cookie - expires in 24 hours, HttpOnly to prevent JS tampering
+    const countCookieHeader = `${COOKIE_NAME}=${newCount}; Path=/; Max-Age=86400; SameSite=Lax;${secureFlag} HttpOnly`;
     response.headers.append('Set-Cookie', countCookieHeader);
 
-    // Set session ID cookie (expires in 30 days) - persists longer to track user across visits
-    const sessionCookieHeader = `${SESSION_COOKIE_NAME}=${sessionId}; Path=/; Max-Age=2592000; SameSite=Lax`;
+    // Session ID cookie - expires in 30 days, persists longer to track user across visits
+    const sessionCookieHeader = `${SESSION_COOKIE_NAME}=${sessionId}; Path=/; Max-Age=2592000; SameSite=Lax;${secureFlag}`;
     response.headers.append('Set-Cookie', sessionCookieHeader);
 
     return response;
