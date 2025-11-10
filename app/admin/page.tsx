@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
 
   const { data: weekSessions } = await supabase
     .from('sessions')
-    .select('user_id')
+    .select('user_id, started_at')
     .gte('started_at', weekAgo.toISOString())
     .not('user_id', 'is', null);
 
