@@ -130,9 +130,9 @@ export default async function AdminDashboard() {
   const weekCosts = calculateModelCosts(weekMessages);
   const monthCosts = calculateModelCosts(monthMessages);
 
-  const todayTotalCost = Object.values(todayCosts).reduce((sum: number, cost) => sum + cost, 0);
-  const weekTotalCost = Object.values(weekCosts).reduce((sum: number, cost) => sum + cost, 0);
-  const monthTotalCost = Object.values(monthCosts).reduce((sum: number, cost) => sum + cost, 0);
+  const todayTotalCost = Object.values(todayCosts).reduce((sum: number, cost: number) => sum + cost, 0);
+  const weekTotalCost = Object.values(weekCosts).reduce((sum: number, cost: number) => sum + cost, 0);
+  const monthTotalCost = Object.values(monthCosts).reduce((sum: number, cost: number) => sum + cost, 0);
 
   // ============================================
   // USER ACTIVITY & CONVERSION METRICS
