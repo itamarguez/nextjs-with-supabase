@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
 
             const latencyMs = Date.now() - startTime;
 
-            // Save assistant message to database (with zero cost)
+            // Save assistant message to database (with zero cost - cached response)
             await addMessage(conversationId, 'assistant', cachedResponse.response, {
               model_used: modelSelection.model,
               task_category: cachedResponse.category as any, // Cached category is stored as string
@@ -185,7 +185,6 @@ export async function POST(req: NextRequest) {
               os: deviceInfo.os,
               country_code: countryCode || undefined,
               referrer: referrer || undefined,
-              was_cached: true,
             });
 
             // Update conversation stats (with zero cost)
