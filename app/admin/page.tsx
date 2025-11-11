@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { redirect } from 'next/navigation';
 import { UserManagementTable } from '@/components/admin/user-management-table';
 import { AnalyticsCharts } from '@/components/admin/analytics-charts';
+import { CacheStatsCard } from '@/components/admin/cache-stats-card';
 import { Users, DollarSign, TrendingUp, Activity } from 'lucide-react';
 
 export default async function AdminDashboard() {
@@ -186,7 +187,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -246,6 +247,8 @@ export default async function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
+
+        <CacheStatsCard />
       </div>
 
       {/* Cost Breakdown by Time Period */}

@@ -1,8 +1,14 @@
 // NoMoreFOMO LLM Router
-// Routes requests to the appropriate LLM provider with streaming support
+// Routes requests to the appropriate LLM provider with streaming support and auto-failover
 
 import { Message } from '../types';
 import { MODEL_CONFIGS } from './models';
+import {
+  shouldFailover,
+  getNextFallbackModel,
+  logFailoverEvent,
+  FailoverReason,
+} from './model-failover';
 
 export interface StreamChunk {
   text: string;
@@ -12,10 +18,106 @@ export interface StreamChunk {
     output: number;
     total: number;
   };
+  failedOver?: boolean;      // Indicates if this response used a fallback model
+  originalModel?: string;     // Original model that failed
+  failoverReason?: string;    // Why failover occurred
 }
 
 /**
- * Route a chat completion request to the appropriate LLM provider
+ * Route with automatic failover to backup models on API failures
+ * This is the main entry point that should be used by the chat API
+ */
+export async function* routeToLLMWithFailover(
+  modelName: string,
+  messages: Array<{ role: string; content: string }>,
+  temperature: number = 0.7,
+  userId?: string,
+  conversationId?: string
+): AsyncGenerator<StreamChunk> {
+  const originalModel = modelName;
+  let currentModel = modelName;
+  const attemptedModels: string[] = [];
+  let attemptNumber = 0;
+  const maxAttempts = 4; // Try original + up to 3 fallbacks
+
+  while (attemptNumber < maxAttempts) {
+    attemptNumber++;
+    attemptedModels.push(currentModel);
+
+    try {
+      console.log(`[FAILOVER] Attempt ${attemptNumber}: Trying model ${currentModel}`);
+
+      // Try to stream from the current model
+      let isFirstChunk = true;
+      for await (const chunk of routeToLLM(currentModel, messages, temperature)) {
+        // Add failover metadata to the first text chunk
+        if (!chunk.done && chunk.text && isFirstChunk) {
+          isFirstChunk = false;
+          yield {
+            ...chunk,
+            failedOver: currentModel !== originalModel,
+            originalModel: currentModel !== originalModel ? originalModel : undefined,
+            failoverReason: currentModel !== originalModel ? 'API failure - using backup model' : undefined,
+          };
+        } else {
+          yield chunk;
+        }
+      }
+
+      // Success! Model worked
+      console.log(`[FAILOVER] Success with model ${currentModel} on attempt ${attemptNumber}`);
+      return;
+
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error(`[FAILOVER] Model ${currentModel} failed:`, err.message);
+
+      // Check if this error should trigger failover
+      const { should, reason } = shouldFailover(err);
+
+      if (!should || attemptNumber >= maxAttempts) {
+        // Don't failover for this error type, or we've exhausted all attempts
+        console.error(`[FAILOVER] No more failover options. Throwing error.`);
+        throw err;
+      }
+
+      // Get next fallback model
+      const nextModel = getNextFallbackModel(originalModel, attemptedModels);
+
+      if (!nextModel) {
+        console.error(`[FAILOVER] No fallback model available for ${currentModel}`);
+        throw err;
+      }
+
+      // Log the failover event
+      await logFailoverEvent({
+        originalModel,
+        fallbackModel: nextModel,
+        reason,
+        attemptNumber,
+        timestamp: new Date(),
+        userId,
+        conversationId,
+      });
+
+      console.log(`[FAILOVER] Failing over from ${currentModel} to ${nextModel} (reason: ${reason})`);
+
+      // Update current model and retry
+      currentModel = nextModel;
+
+      // Brief delay before retry (exponential backoff)
+      const delayMs = Math.min(1000 * Math.pow(2, attemptNumber - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  // If we get here, all attempts failed
+  throw new Error(`All failover attempts exhausted for model ${originalModel}`);
+}
+
+/**
+ * Route a chat completion request to the appropriate LLM provider (base function)
+ * Note: Use routeToLLMWithFailover instead for automatic failover support
  */
 export async function* routeToLLM(
   modelName: string,

@@ -4,8 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { selectModelForPrompt } from '@/lib/llm/model-selector';
-import { routeToLLM } from '@/lib/llm/router';
+import { routeToLLMWithFailover } from '@/lib/llm/router';
 import { calculateCost } from '@/lib/llm/models';
+import { promptCache } from '@/lib/cache/prompt-cache';
 import {
   checkRateLimit,
   recordRequest,
@@ -85,6 +86,158 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get conversation history early (needed for cache key)
+    const recentMessages = await getRecentMessages(conversationId, 10);
+    const conversationHistory = recentMessages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    // Check if user has premium credits (for model selection)
+    const hasPremiumCredits = await canUsePremiumRequest(user.id, profile.tier);
+
+    // Select the best model for this prompt
+    const modelSelection = selectModelForPrompt(
+      message,
+      profile.tier,
+      conversationHistory,
+      hasPremiumCredits
+    );
+    console.log(`Model selected: ${modelSelection.model}, isPremium: ${modelSelection.isPremium}, category: ${modelSelection.category}`);
+
+    // ═══════════════════════════════════════════════
+    // CHECK CACHE FIRST (before abuse detection)
+    // ═══════════════════════════════════════════════
+    const cacheKey = await promptCache.generateKey(
+      message,
+      conversationHistory,
+      modelSelection.model
+    );
+    const cachedResponse = promptCache.get(cacheKey);
+
+    if (cachedResponse) {
+      // Cache HIT - return immediately without abuse checks or API calls
+      console.log(`[Cache HIT] Model: ${modelSelection.model}, Tokens saved: ${cachedResponse.inputTokens + cachedResponse.outputTokens}`);
+
+      // Still save user message to database
+      const ipAddress = getClientIP(req);
+      const userAgent = req.headers.get('user-agent');
+      const referrer = req.headers.get('referer') || req.headers.get('referrer');
+      const deviceInfo = parseUserAgent(userAgent);
+      const countryCode = await getCountryFromIP(ipAddress);
+
+      const startTime = Date.now();
+      await addMessage(conversationId, 'user', message, {
+        ip_address: ipAddress || undefined,
+        user_agent: userAgent || undefined,
+        device_type: deviceInfo.deviceType,
+        browser: deviceInfo.browser,
+        os: deviceInfo.os,
+        country_code: countryCode || undefined,
+        referrer: referrer || undefined,
+      });
+
+      // Update conversation title if needed
+      const conversation = await getConversation(conversationId, user.id);
+      const shouldUpdateTitle = recentMessages.length === 0 || conversation?.title === 'New Conversation';
+      if (shouldUpdateTitle) {
+        const title = generateConversationTitle(message);
+        await updateConversationTitle(conversationId, user.id, title);
+      }
+
+      // Return cached response via streaming
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Simulate streaming by chunking the cached response
+            const chunkSize = 50;
+            for (let i = 0; i < cachedResponse.response.length; i += chunkSize) {
+              const chunk = cachedResponse.response.slice(i, i + chunkSize);
+              const data = JSON.stringify({
+                type: 'chunk',
+                text: chunk,
+                model: modelSelection.model,
+                category: cachedResponse.category,
+                reason: cachedResponse.reason,
+                isPremium: modelSelection.isPremium,
+                betterModelAvailable: modelSelection.betterModelAvailable,
+                cached: true,
+              });
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
+            const latencyMs = Date.now() - startTime;
+
+            // Save assistant message to database (with zero cost)
+            await addMessage(conversationId, 'assistant', cachedResponse.response, {
+              model_used: modelSelection.model,
+              task_category: cachedResponse.category,
+              selection_reason: cachedResponse.reason,
+              tokens_used: cachedResponse.inputTokens + cachedResponse.outputTokens,
+              cost_usd: 0, // No API cost for cached response
+              latency_ms: latencyMs,
+              ip_address: ipAddress || undefined,
+              user_agent: userAgent || undefined,
+              device_type: deviceInfo.deviceType,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+              country_code: countryCode || undefined,
+              referrer: referrer || undefined,
+              was_cached: true,
+            });
+
+            // Update conversation stats (with zero cost)
+            await updateConversationUsage(conversationId, cachedResponse.inputTokens + cachedResponse.outputTokens, 0);
+            await updateTokenUsage(user.id, cachedResponse.inputTokens + cachedResponse.outputTokens, 0);
+
+            // Get premium credits info
+            const tierLimits = getTierLimits(profile.tier);
+            const premiumCreditsRemaining =
+              profile.tier === 'free'
+                ? tierLimits.premium_requests_per_month - (profile.premium_requests_this_month || 0)
+                : tierLimits.premium_requests_per_month;
+
+            // Send final metadata
+            const finalData = JSON.stringify({
+              type: 'done',
+              model: modelSelection.model,
+              category: cachedResponse.category,
+              tokensUsed: cachedResponse.inputTokens + cachedResponse.outputTokens,
+              latencyMs,
+              isPremium: modelSelection.isPremium,
+              betterModelAvailable: modelSelection.betterModelAvailable,
+              premiumCreditsRemaining,
+              premiumCreditsLimit: tierLimits.premium_requests_per_month,
+              cached: true,
+            });
+            controller.enqueue(encoder.encode(`data: ${finalData}\n\n`));
+            controller.close();
+          } catch (error) {
+            console.error('Cached streaming error:', error);
+            const errorData = JSON.stringify({
+              type: 'error',
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
+            });
+            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // Cache MISS - continue with normal flow including abuse detection
+    console.log(`[Cache MISS] Model: ${modelSelection.model}`);
+
     // Get IP and User-Agent for abuse detection AND analytics
     const ipAddress = getClientIP(req);
     const userAgent = req.headers.get('user-agent');
@@ -96,7 +249,7 @@ export async function POST(req: NextRequest) {
     // Get country from IP (async, but we'll await it when saving messages)
     const countryCodePromise = getCountryFromIP(ipAddress);
 
-    // Detect abuse
+    // Detect abuse (only for cache misses)
     const abuseCheck = await detectAbuse(
       user.id,
       message,
@@ -110,24 +263,6 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       );
     }
-
-    // Check if user has premium credits (for hybrid model)
-    const hasPremiumCredits = await canUsePremiumRequest(user.id, profile.tier);
-
-    // Select the best model for this prompt
-    const recentMessages = await getRecentMessages(conversationId, 10);
-    const conversationHistory = recentMessages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    }));
-
-    const modelSelection = selectModelForPrompt(
-      message,
-      profile.tier,
-      conversationHistory,
-      hasPremiumCredits // Pass premium credits availability
-    );
-    console.log(`Model selected: ${modelSelection.model}, isPremium: ${modelSelection.isPremium}, category: ${modelSelection.category}`);
 
     // Check rate limits
     const rateLimitCheck = await checkRateLimit(
@@ -182,7 +317,10 @@ export async function POST(req: NextRequest) {
       { role: 'user', content: message },
     ];
 
-    // Create streaming response
+    // Cache key already generated above (line 111)
+    // We'll use the same cacheKey to store the response after LLM call
+
+    // Create streaming response (cache miss - call LLM)
     const encoder = new TextEncoder();
     let fullResponse = '';
     let inputTokens = 0;
@@ -191,15 +329,18 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Stream from selected LLM
-          for await (const chunk of routeToLLM(
+          // Stream from selected LLM with auto-failover
+          for await (const chunk of routeToLLMWithFailover(
             modelSelection.model,
-            messagesForLLM
+            messagesForLLM,
+            0.7, // temperature
+            user.id,
+            conversationId
           )) {
             if (chunk.text) {
               fullResponse += chunk.text;
 
-              // Send chunk to client
+              // Send chunk to client (include failover metadata)
               const data = JSON.stringify({
                 type: 'chunk',
                 text: chunk.text,
@@ -208,6 +349,9 @@ export async function POST(req: NextRequest) {
                 reason: modelSelection.reason,
                 isPremium: modelSelection.isPremium,
                 betterModelAvailable: modelSelection.betterModelAvailable,
+                failedOver: chunk.failedOver,
+                originalModel: chunk.originalModel,
+                failoverReason: chunk.failoverReason,
               });
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
             }
@@ -262,6 +406,16 @@ export async function POST(req: NextRequest) {
                   ? tierLimits.premium_requests_per_month - ((profile.premium_requests_this_month || 0) + (modelSelection.isPremium ? 1 : 0))
                   : tierLimits.premium_requests_per_month;
 
+              // Cache the response for future use
+              promptCache.set(cacheKey, {
+                response: fullResponse,
+                inputTokens,
+                outputTokens,
+                model: modelSelection.model,
+                category: modelSelection.category,
+                reason: modelSelection.reason,
+              });
+
               // Send final metadata (without cost)
               const finalData = JSON.stringify({
                 type: 'done',
@@ -273,6 +427,7 @@ export async function POST(req: NextRequest) {
                 betterModelAvailable: modelSelection.betterModelAvailable,
                 premiumCreditsRemaining,
                 premiumCreditsLimit: tierLimits.premium_requests_per_month,
+                cached: false,
               });
               controller.enqueue(encoder.encode(`data: ${finalData}\n\n`));
             }

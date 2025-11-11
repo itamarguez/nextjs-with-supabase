@@ -303,7 +303,7 @@ export async function detectAbuse(
       }
     }
 
-    if (identicalCount >= 3) {
+    if (identicalCount >= 5) {
       await logAbuseViolation(
         userId,
         'repeated_prompts',
