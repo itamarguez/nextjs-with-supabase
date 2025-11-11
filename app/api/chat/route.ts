@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
             // Save assistant message to database (with zero cost)
             await addMessage(conversationId, 'assistant', cachedResponse.response, {
               model_used: modelSelection.model,
-              task_category: cachedResponse.category,
+              task_category: cachedResponse.category as any, // Cached category is stored as string
               selection_reason: cachedResponse.reason,
               tokens_used: cachedResponse.inputTokens + cachedResponse.outputTokens,
               cost_usd: 0, // No API cost for cached response

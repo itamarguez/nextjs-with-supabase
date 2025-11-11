@@ -36,7 +36,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ...stats,
       estimatedSavings: parseFloat(estimatedSavings.toFixed(4)),
-      uptime: process.uptime(), // Server uptime in seconds
     });
   } catch (error) {
     console.error('Cache stats API error:', error);
