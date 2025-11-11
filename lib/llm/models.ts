@@ -34,8 +34,8 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     name: 'gemini-2.0-flash-thinking-exp-01-21',
     provider: 'google',
     displayName: 'Gemini 2.0 Flash',
-    cost_per_1m_input: 0.0,  // Free during experimental period
-    cost_per_1m_output: 0.0,  // Free during experimental period
+    cost_per_1m_input: 0.075,  // Estimated (currently free experimental, using Flash 1.5 pricing for analytics)
+    cost_per_1m_output: 0.30,  // Estimated (currently free experimental, using Flash 1.5 pricing for analytics)
     max_context_window: 1000000,
     supports_streaming: true,
     lmarena_ranks: {
