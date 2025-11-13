@@ -102,9 +102,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`[Webhook] Upgrading user ${userId} to ${tier} tier`);
 
   // Get subscription details
-  const subscription = await stripe.subscriptions.retrieve(
+  const subscription = (await stripe.subscriptions.retrieve(
     session.subscription as string
-  ) as Stripe.Subscription;
+  )) as any;
 
   // Update user profile
   await supabaseAdmin
@@ -127,7 +127,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 /**
  * Handle subscription updates (renewals, plan changes)
  */
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: any) {
   const { data: profile } = await supabaseAdmin
     .from('user_profiles')
     .select('id')
