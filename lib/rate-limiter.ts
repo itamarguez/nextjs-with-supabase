@@ -23,12 +23,18 @@ const TIER_LIMITS: Record<string, TierLimits> = {
   },
   pro: {
     tier: 'pro',
-    monthly_token_limit: 1000000,
+    monthly_token_limit: 2000000, // 2M tokens/month ($12/month)
     max_tokens_per_request: 8000,
     requests_per_minute: 20,
     requests_per_hour: 300,
     requests_per_day: 2000,
-    allowed_models: ['gpt-4o-mini', 'gemini-2.0-flash-thinking-exp-01-21', 'claude-3-5-haiku-20241022'],
+    allowed_models: [
+      'gpt-4o-mini',
+      'gemini-2.0-flash-thinking-exp-01-21',
+      'claude-3-5-haiku-20241022',
+      'gpt-4o', // NEW: Pro tier now gets GPT-4o!
+      'claude-3-5-sonnet', // NEW: Pro tier now gets Claude Sonnet!
+    ],
     max_context_window: 32000,
     can_use_premium_models: true,
     priority_queue: false,
@@ -36,7 +42,7 @@ const TIER_LIMITS: Record<string, TierLimits> = {
   },
   unlimited: {
     tier: 'unlimited',
-    monthly_token_limit: -1, // No limit
+    monthly_token_limit: 10000000, // 10M tokens/month ($49/month)
     max_tokens_per_request: 32000,
     requests_per_minute: 60,
     requests_per_hour: 2000,
