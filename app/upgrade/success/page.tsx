@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 export const dynamic = 'force-dynamic';
 
-export default function UpgradeSuccessPage() {
+function UpgradeSuccessContent() {
   const [loading, setLoading] = useState(true);
   const [tier, setTier] = useState<string>('');
   const router = useRouter();
@@ -141,5 +141,22 @@ export default function UpgradeSuccessPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function UpgradeSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-xl text-gray-700">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <UpgradeSuccessContent />
+    </Suspense>
   );
 }
