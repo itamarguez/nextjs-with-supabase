@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { TIER_PRICING } from '@/lib/llm/models';
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default function UpgradePage() {
   const [currentTier, setCurrentTier] = useState<string>('free');
   const [loading, setLoading] = useState(true);
