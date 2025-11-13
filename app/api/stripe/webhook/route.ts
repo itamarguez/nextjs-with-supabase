@@ -104,7 +104,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Get subscription details
   const subscription = await stripe.subscriptions.retrieve(
     session.subscription as string
-  );
+  ) as Stripe.Subscription;
 
   // Update user profile
   await supabaseAdmin
