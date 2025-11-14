@@ -67,7 +67,7 @@ function UpgradeSuccessContent() {
 
         {/* Success Message */}
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Welcome to {tier === 'pro' ? 'Pro' : 'Unlimited'}!
+          Welcome to {tier.charAt(0).toUpperCase() + tier.slice(1)}!
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           Your subscription has been activated successfully. You now have access to all premium features!
@@ -127,17 +127,9 @@ function UpgradeSuccessContent() {
         {/* CTA Button */}
         <button
           onClick={() => router.push('/chat')}
-          className="w-full py-3 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors mb-4"
+          className="w-full py-3 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
         >
           Start Chatting with Premium Models
-        </button>
-
-        {/* Secondary Action */}
-        <button
-          onClick={() => router.push('/admin')}
-          className="w-full py-2 px-6 rounded-lg text-gray-600 hover:text-gray-900 font-medium transition-colors"
-        >
-          View Usage Dashboard
         </button>
       </div>
     </div>

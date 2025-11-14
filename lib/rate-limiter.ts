@@ -10,7 +10,7 @@ import { detectSuspiciousPrompt, calculatePromptSimilarity } from './llm/prompt-
 const TIER_LIMITS: Record<string, TierLimits> = {
   free: {
     tier: 'free',
-    monthly_token_limit: 100000,
+    monthly_token_limit: 100000, // 100K tokens/month
     max_tokens_per_request: 2000,
     requests_per_minute: 5,
     requests_per_hour: 50,
@@ -23,11 +23,11 @@ const TIER_LIMITS: Record<string, TierLimits> = {
   },
   pro: {
     tier: 'pro',
-    monthly_token_limit: 2000000, // 2M tokens/month ($12/month)
+    monthly_token_limit: 1000000, // 1M tokens/month ($12/month)
     max_tokens_per_request: 8000,
     requests_per_minute: 20,
     requests_per_hour: 300,
-    requests_per_day: 2000,
+    requests_per_day: 1000,
     allowed_models: [
       'gpt-4o-mini',
       'gemini-2.0-flash-thinking-exp-01-21',
