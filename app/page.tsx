@@ -40,6 +40,9 @@ export default async function HomePage() {
             <Badge variant="secondary">Beta</Badge>
           </div>
           <div className="flex items-center gap-4">
+            <Button asChild variant="ghost">
+              <Link href="/upgrade">Pricing</Link>
+            </Button>
             <ThemeSwitcher />
             {user ? (
               <Button asChild>
@@ -55,8 +58,7 @@ export default async function HomePage() {
                 </Button>
               </div>
             )}
-          </div>
-        </div>
+          </div>        </div>
       </header>
 
       {/* Hero Section with Trial Chat */}
@@ -349,8 +351,9 @@ export default async function HomePage() {
                 <ul className="space-y-2 text-sm">
                   <li>✓ 100K tokens/month</li>
                   <li>✓ 200 requests/day</li>
-                  <li>✓ GPT-4o Mini & Gemini Flash</li>
-                  <li>✓ Standard response time</li>
+                  <li>✓ Low-cost models (GPT-4o mini, Gemini Flash)</li>
+                  <li>✓ Up to 10 premium model answers/month</li>
+                  <li>✓ Might be showing ads</li>
                 </ul>
                 <Button asChild className="w-full" variant="outline">
                   <Link href="/auth/sign-up">Start Free</Link>
@@ -371,15 +374,14 @@ export default async function HomePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
-                  <li>✓ 500K tokens/month</li>
+                  <li>✓ 1M tokens/month</li>
                   <li>✓ 1,000 requests/day</li>
-                  <li>✓ GPT-4o & Claude Sonnet</li>
-                  <li>✓ All budget models included</li>
-                  <li>✓ Larger context (32K)</li>
+                  <li>✓ Premium models (GPT-4o, GPT-5, Claude Sonnet)</li>
+                  <li>✓ Larger context windows (32K)</li>
                   <li>✓ Priority support</li>
                 </ul>
                 <Button asChild className="w-full">
-                  <Link href="/auth/sign-up">Get Pro</Link>
+                  <Link href="/upgrade">Upgrade to Pro</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -387,9 +389,8 @@ export default async function HomePage() {
             {/* Unlimited Tier */}
             <Card>
               <CardHeader>
-                <Badge className="w-fit" variant="secondary">Coming Soon</Badge>
                 <CardTitle className="mt-2">Unlimited</CardTitle>
-                <CardDescription>Advanced features for power users</CardDescription>
+                <CardDescription>For power users who need maximum capacity</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">$49</span>
                   <span className="text-muted-foreground">/month</span>
@@ -397,16 +398,15 @@ export default async function HomePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
-                  <li>✓ 5M tokens/month</li>
-                  <li>✓ 5,000 requests/day</li>
-                  <li>✓ All Pro models + premium access</li>
-                  <li>✓ Max context (200K)</li>
-                  <li>✓ Deep search (coming soon)</li>
-                  <li>✓ Image generation (coming soon)</li>
+                  <li>✓ Up to 10M tokens/month</li>
+                  <li>✓ 10,000 requests/day</li>
+                  <li>✓ All models (GPT-5, Claude Sonnet, Gemini Pro)</li>
+                  <li>✓ Maximum context windows (200K)</li>
+                  <li>✓ Priority queue</li>
                   <li>✓ Dedicated support</li>
                 </ul>
                 <Button asChild className="w-full" variant="outline">
-                  <Link href="/auth/sign-up">Join Early Access</Link>
+                  <Link href="/upgrade">Upgrade to Unlimited</Link>
                 </Button>
               </CardContent>
             </Card>

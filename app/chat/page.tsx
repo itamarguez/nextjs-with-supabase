@@ -361,12 +361,31 @@ export default function ChatPage() {
 
       {/* Main Chat Area */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+        {/* Header with Tier Display */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-background">
+          <h1 className="text-lg font-semibold">NoMoreFOMO Chat</h1>
+          <div className="flex items-center gap-3">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Plan: </span>
+              <span className="font-semibold capitalize">{userTier}</span>
+            </div>
+            {userTier !== 'unlimited' && (
+              <button
+                onClick={() => router.push('/upgrade')}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                Upgrade
+              </button>
+            )}
+          </div>
+        </div>
+
         {limitReached ? (
           <div className="flex h-full items-center justify-center p-4">
             <LimitReached
               limitType={limitReached.type}
               currentTier={userTier}
-              onUpgrade={() => router.push('/pricing')}
+              onUpgrade={() => router.push('/upgrade')}
             />
           </div>
         ) : (
@@ -377,7 +396,7 @@ export default function ChatPage() {
                 <StrategyPrompt
                   strategy={strategyPrompt}
                   currentTier={userTier}
-                  onUpgrade={() => router.push('/pricing')}
+                  onUpgrade={() => router.push('/upgrade')}
                   onDismiss={() => setStrategyPrompt(null)}
                 />
               </div>
