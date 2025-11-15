@@ -15,9 +15,6 @@ function UpgradeSuccessContent() {
 
   useEffect(() => {
     async function checkUpgrade() {
-      // Wait a moment for webhook to process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -27,6 +24,30 @@ function UpgradeSuccessContent() {
         return;
       }
 
+      // Poll for tier update (webhook might take a few seconds)
+      let attempts = 0;
+      const maxAttempts = 10; // Try for up to 10 seconds
+
+      while (attempts < maxAttempts) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('tier')
+          .eq('id', user.id)
+          .single();
+
+        // Check if tier has been upgraded from free
+        if (profile && profile.tier !== 'free') {
+          setTier(profile.tier);
+          setLoading(false);
+          return;
+        }
+
+        // Wait 1 second before next check
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        attempts++;
+      }
+
+      // After 10 seconds, show whatever tier we have (might still be processing)
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('tier')
