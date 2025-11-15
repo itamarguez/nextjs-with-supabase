@@ -91,15 +91,33 @@ export async function POST(req: NextRequest) {
  * Handle successful checkout completion
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  console.log('[Webhook] Session metadata:', session.metadata);
+
   const userId = session.metadata?.supabase_user_id;
   const tier = session.metadata?.tier;
 
   if (!userId || !tier) {
     console.error('[Webhook] Missing user ID or tier in session metadata');
+    console.error('[Webhook] Received metadata:', session.metadata);
     return;
   }
 
   console.log(`[Webhook] Upgrading user ${userId} to ${tier} tier`);
+
+  // First, verify the user exists
+  const { data: existingUser, error: fetchError } = await supabaseAdmin
+    .from('user_profiles')
+    .select('id, tier, email')
+    .eq('id', userId)
+    .single();
+
+  if (fetchError || !existingUser) {
+    console.error('[Webhook] User not found in database:', userId);
+    console.error('[Webhook] Fetch error:', fetchError);
+    return;
+  }
+
+  console.log('[Webhook] Found user:', existingUser);
 
   // Get subscription details
   if (!session.subscription) {
@@ -123,27 +141,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     end: subscription.current_period_end,
   });
 
+  const updateData = {
+    tier: tier,
+    stripe_subscription_id: subscription.id,
+    subscription_start_date: new Date(
+      subscription.current_period_start * 1000
+    ).toISOString(),
+    subscription_end_date: new Date(
+      subscription.current_period_end * 1000
+    ).toISOString(),
+  };
+
+  console.log('[Webhook] Attempting update with data:', updateData);
+
   // Update user profile
-  const { error } = await supabaseAdmin
+  const { data: updateResult, error } = await supabaseAdmin
     .from('user_profiles')
-    .update({
-      tier: tier,
-      stripe_subscription_id: subscription.id,
-      subscription_start_date: new Date(
-        subscription.current_period_start * 1000
-      ).toISOString(),
-      subscription_end_date: new Date(
-        subscription.current_period_end * 1000
-      ).toISOString(),
-    })
-    .eq('id', userId);
+    .update(updateData)
+    .eq('id', userId)
+    .select();
 
   if (error) {
     console.error('[Webhook] Database update error:', error);
     throw error;
   }
 
-  console.log(`[Webhook] User ${userId} upgraded to ${tier}`);
+  if (!updateResult || updateResult.length === 0) {
+    console.error('[Webhook] Update returned no rows - user may not exist');
+    return;
+  }
+
+  console.log(`[Webhook] Successfully upgraded user ${userId} to ${tier}`);
+  console.log('[Webhook] Updated profile:', updateResult[0]);
 }
 
 /**
