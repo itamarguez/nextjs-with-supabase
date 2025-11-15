@@ -107,7 +107,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // First, verify the user exists
   const { data: existingUser, error: fetchError } = await supabaseAdmin
     .from('user_profiles')
-    .select('id, tier, email')
+    .select('id, tier')
     .eq('id', userId)
     .single();
 
