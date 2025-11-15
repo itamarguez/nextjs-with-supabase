@@ -102,12 +102,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`[Webhook] Upgrading user ${userId} to ${tier} tier`);
 
   // Get subscription details
+  if (!session.subscription) {
+    console.error('[Webhook] No subscription ID in session');
+    return;
+  }
+
   const subscription = (await stripe.subscriptions.retrieve(
     session.subscription as string
   )) as any;
 
+  // Validate subscription data
+  if (!subscription.current_period_start || !subscription.current_period_end) {
+    console.error('[Webhook] Missing subscription period dates');
+    return;
+  }
+
+  console.log(`[Webhook] Subscription data:`, {
+    id: subscription.id,
+    start: subscription.current_period_start,
+    end: subscription.current_period_end,
+  });
+
   // Update user profile
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from('user_profiles')
     .update({
       tier: tier,
@@ -120,6 +137,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       ).toISOString(),
     })
     .eq('id', userId);
+
+  if (error) {
+    console.error('[Webhook] Database update error:', error);
+    throw error;
+  }
 
   console.log(`[Webhook] User ${userId} upgraded to ${tier}`);
 }
