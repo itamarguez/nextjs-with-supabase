@@ -154,12 +154,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   console.log('[Webhook] Attempting update with data:', updateData);
 
-  // Update user profile
-  const { data: updateResult, error } = await supabaseAdmin
-    .from('user_profiles')
-    .update(updateData)
-    .eq('id', userId)
-    .select();
+  // Use security definer function to bypass RLS
+  const { data: updateResult, error } = await supabaseAdmin.rpc(
+    'update_user_tier_from_webhook',
+    {
+      p_user_id: userId,
+      p_tier: tier,
+      p_stripe_subscription_id: subscription.id,
+      p_subscription_start_date: updateData.subscription_start_date,
+      p_subscription_end_date: updateData.subscription_end_date,
+    }
+  );
 
   if (error) {
     console.error('[Webhook] Database update error:', error);
