@@ -129,27 +129,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     session.subscription as string
   )) as any;
 
-  // Validate subscription data
-  if (!subscription.current_period_start || !subscription.current_period_end) {
-    console.error('[Webhook] Missing subscription period dates');
-    return;
-  }
-
-  console.log(`[Webhook] Subscription data:`, {
+  console.log('[Webhook] Subscription retrieved:', {
     id: subscription.id,
-    start: subscription.current_period_start,
-    end: subscription.current_period_end,
+    status: subscription.status,
+  });
+
+  // Use subscription dates if available, otherwise use defaults
+  const now = new Date();
+  const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const subscriptionStartDate = subscription.current_period_start
+    ? new Date(subscription.current_period_start * 1000).toISOString()
+    : now.toISOString();
+
+  const subscriptionEndDate = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : oneMonthFromNow.toISOString();
+
+  console.log(`[Webhook] Subscription dates:`, {
+    start: subscriptionStartDate,
+    end: subscriptionEndDate,
   });
 
   const updateData = {
     tier: tier,
     stripe_subscription_id: subscription.id,
-    subscription_start_date: new Date(
-      subscription.current_period_start * 1000
-    ).toISOString(),
-    subscription_end_date: new Date(
-      subscription.current_period_end * 1000
-    ).toISOString(),
+    subscription_start_date: subscriptionStartDate,
+    subscription_end_date: subscriptionEndDate,
   };
 
   console.log('[Webhook] Attempting update with data:', updateData);
