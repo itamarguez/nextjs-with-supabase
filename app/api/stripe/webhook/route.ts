@@ -153,6 +153,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   };
 
   console.log('[Webhook] Attempting update with data:', updateData);
+  console.log('[Webhook] Calling RPC with params:', {
+    p_user_id: userId,
+    p_tier: tier,
+    p_stripe_subscription_id: subscription.id,
+    p_subscription_start_date: updateData.subscription_start_date,
+    p_subscription_end_date: updateData.subscription_end_date,
+  });
 
   // Use security definer function to bypass RLS
   const { data: updateResult, error } = await supabaseAdmin.rpc(
@@ -166,17 +173,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
   );
 
+  console.log('[Webhook] RPC response:', { data: updateResult, error });
+
   if (error) {
     console.error('[Webhook] Database update error:', error);
+    console.error('[Webhook] Error details:', JSON.stringify(error));
     throw error;
   }
 
   if (!updateResult || updateResult.length === 0) {
     console.error('[Webhook] Update returned no rows - user may not exist');
+    console.error('[Webhook] Result was:', updateResult);
     return;
   }
 
-  console.log(`[Webhook] Successfully upgraded user ${userId} to ${tier}`);
+  console.log(`[Webhook] ✅ Successfully upgraded user ${userId} to ${tier}`);
   console.log('[Webhook] Updated profile:', updateResult[0]);
 }
 
