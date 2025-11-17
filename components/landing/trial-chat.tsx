@@ -22,7 +22,7 @@ export function TrialChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messagesRemaining, setMessagesRemaining] = useState(4);
+  const [messagesRemaining, setMessagesRemaining] = useState(3);
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -82,6 +82,14 @@ export function TrialChat() {
     }
     Analytics.trialMessageSent(messageNumber);
 
+    // If this is the 4th message (messagesRemaining is 0), show signup BEFORE getting answer
+    if (messagesRemaining <= 0) {
+      Analytics.trialLimitReached();
+      setIsLoading(false);
+      setShowSignupPrompt(true);
+      return;
+    }
+
     try {
       const response = await fetch('/api/chat/anonymous', {
         method: 'POST',
@@ -122,16 +130,16 @@ export function TrialChat() {
 
               if (data.type === 'metadata') {
                 modelInfo = { model: data.model, category: data.category };
-                setMessagesRemaining(data.messagesRemaining);
+                // Subtract 1 to show "3 messages" limit to user (backend allows 4)
+                setMessagesRemaining(Math.max(0, data.messagesRemaining - 1));
               } else if (data.type === 'chunk') {
                 assistantMessage += data.text;
                 setStreamingMessage(assistantMessage);
               } else if (data.type === 'done') {
-                setMessagesRemaining(data.messagesRemaining);
-                // Don't show signup yet - wait until message is displayed
-                if (data.limitReached) {
-                  shouldShowSignup = true;
-                }
+                // Subtract 1 to show "3 messages" limit to user (backend allows 4)
+                setMessagesRemaining(Math.max(0, data.messagesRemaining - 1));
+                // Don't show signup on 3rd message - let them try to send 4th
+                // The 4th attempt will trigger signup modal immediately (before getting answer)
                 break;
               } else if (data.type === 'error') {
                 throw new Error(data.error);
@@ -153,13 +161,6 @@ export function TrialChat() {
       setMessages((prev) => [...prev, finalMessage]);
       setStreamingMessage('');
 
-      // Show signup prompt AFTER message is added to state
-      // Give user time to read the final response before showing signup modal
-      if (shouldShowSignup) {
-        setTimeout(() => {
-          setShowSignupPrompt(true);
-        }, 5000); // 5 second delay so user can fully read the response
-      }
     } catch (error) {
       console.error('Chat error:', error);
       alert('Failed to send message. Please try again.');
@@ -284,7 +285,7 @@ export function TrialChat() {
             <div className="text-5xl">🎉</div>
             <h3 className="text-2xl font-bold">You've seen what we can do!</h3>
             <p className="text-muted-foreground">
-              You've used all 4 free trial messages. Sign up to keep chatting with the best AI models, automatically selected for each task.
+              You've used all 3 free trial messages. Sign up to keep chatting with the best AI models, automatically selected for each task.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button asChild size="lg" onClick={() => Analytics.signupClicked('trial_chat_limit')}>
