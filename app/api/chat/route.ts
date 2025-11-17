@@ -310,8 +310,11 @@ export async function POST(req: NextRequest) {
       await updateConversationTitle(conversationId, user.id, title);
     }
 
-    // Build messages array for LLM
+    // Build messages array for LLM with system prompt for concise responses
+    const systemPrompt = `You are a helpful AI assistant. Keep your responses concise and to the point - aim for 2-4 sentences unless the user specifically asks for a detailed explanation. Be friendly and conversational, like ChatGPT, Claude, or Gemini would be.`;
+
     const messagesForLLM = [
+      { role: 'system', content: systemPrompt },
       ...conversationHistory,
       { role: 'user', content: message },
     ];

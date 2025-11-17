@@ -11,7 +11,7 @@ import { parseUserAgent, getCountryFromIP } from '@/lib/analytics/device-detecto
 
 export const runtime = 'edge';
 
-const MAX_FREE_MESSAGES = 3;
+const MAX_FREE_MESSAGES = 4; // Allow 4 free messages (was 3)
 const COOKIE_NAME = 'nomorefomo_trial_count';
 const SESSION_COOKIE_NAME = 'nomorefomo_session_id';
 
@@ -75,19 +75,29 @@ export async function POST(req: NextRequest) {
         {
           error: 'Free trial limit reached',
           limitReached: true,
-          message: 'You\'ve used all 3 free messages! Sign up to continue chatting.',
+          message: 'You\'ve used all 4 free messages! Sign up to continue chatting.',
         },
         { status: 403 }
       );
     }
 
-    // Select model for anonymous users (always use cheapest model)
+    // Select model for anonymous users
+    // Rotate between models to show variety (GPT-4o-mini, then Gemini, then GPT-4o-mini, etc.)
+    const availableTrialModels = ['gpt-4o-mini', 'gemini-2.0-flash-thinking-exp-01-21'];
+    const rotatedModel = availableTrialModels[currentCount % availableTrialModels.length];
+
+    // Get category analysis but override model for trial rotation
     const modelSelection = selectModelForPrompt(
       message,
       'free', // Always free tier for anonymous
       [], // No conversation history
       false // Can't use premium models
     );
+
+    // Override with rotated model to show variety
+    modelSelection.model = rotatedModel;
+    const modelDisplayName = rotatedModel === 'gpt-4o-mini' ? 'GPT-4o Mini' : 'Gemini 2.0 Flash';
+    modelSelection.reason = `${modelDisplayName} - Try ${currentCount + 1}/${MAX_FREE_MESSAGES}`;
 
     // Route to LLM
     const encoder = new TextEncoder();
@@ -108,10 +118,15 @@ export async function POST(req: NextRequest) {
             encoder.encode(`data: ${JSON.stringify(metadata)}\n\n`)
           );
 
-          // Stream from LLM
+          // Stream from LLM with system prompt for concise responses
+          const systemPrompt = `You are a helpful AI assistant. Keep your responses concise and to the point - aim for 2-4 sentences unless the user specifically asks for a detailed explanation. Be friendly and conversational, like ChatGPT, Claude, or Gemini would be.`;
+
           const llmStream = routeToLLM(
             modelSelection.model,
-            [{ role: 'user', content: message }],
+            [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: message }
+            ],
             0.7
           );
 

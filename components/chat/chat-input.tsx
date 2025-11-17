@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 
@@ -13,7 +13,19 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [message, setMessage] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleSubmit = () => {
     if (message.trim() && !disabled) {
@@ -28,8 +40,9 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter (without Shift)
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // On desktop: Submit on Enter (without Shift)
+    // On mobile: Let Enter create newline, user taps Send button
+    if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
       e.preventDefault();
       handleSubmit();
     }
@@ -70,9 +83,15 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       </div>
 
         <div className="mt-2 text-xs text-muted-foreground">
-          Press <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> to send,{' '}
-          <kbd className="rounded bg-muted px-1.5 py-0.5">Shift</kbd> +{' '}
-          <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> for new line
+          {isMobile ? (
+            <>Tap <Send className="inline h-3 w-3" /> to send</>
+          ) : (
+            <>
+              Press <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> to send,{' '}
+              <kbd className="rounded bg-muted px-1.5 py-0.5">Shift</kbd> +{' '}
+              <kbd className="rounded bg-muted px-1.5 py-0.5">Enter</kbd> for new line
+            </>
+          )}
         </div>
       </div>
     </div>
