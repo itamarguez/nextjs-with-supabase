@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Analytics } from '@/lib/analytics/tracker';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -21,7 +22,7 @@ export function TrialChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messagesRemaining, setMessagesRemaining] = useState(3);
+  const [messagesRemaining, setMessagesRemaining] = useState(4);
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -153,11 +154,11 @@ export function TrialChat() {
       setStreamingMessage('');
 
       // Show signup prompt AFTER message is added to state
-      // Add small delay to ensure message is rendered
+      // Give user time to read the final response before showing signup modal
       if (shouldShowSignup) {
         setTimeout(() => {
           setShowSignupPrompt(true);
-        }, 500); // 500ms delay so user can see the final message
+        }, 5000); // 5 second delay so user can fully read the response
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -233,7 +234,13 @@ export function TrialChat() {
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                    {message.role === 'assistant' ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                    )}
                     {message.model && (
                       <p className="mt-1 text-xs opacity-70">
                         {message.model} • {message.category}
@@ -277,7 +284,7 @@ export function TrialChat() {
             <div className="text-5xl">🎉</div>
             <h3 className="text-2xl font-bold">You've seen what we can do!</h3>
             <p className="text-muted-foreground">
-              You've used all 3 free trial messages. Sign up to keep chatting with the best AI models, automatically selected for each task.
+              You've used all 4 free trial messages. Sign up to keep chatting with the best AI models, automatically selected for each task.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button asChild size="lg" onClick={() => Analytics.signupClicked('trial_chat_limit')}>
