@@ -118,8 +118,8 @@ export async function POST(req: NextRequest) {
             encoder.encode(`data: ${JSON.stringify(metadata)}\n\n`)
           );
 
-          // Stream from LLM with system prompt for concise responses
-          const systemPrompt = `You are a helpful AI assistant. Keep your responses concise and to the point - aim for 2-4 sentences unless the user specifically asks for a detailed explanation. Be friendly and conversational, like ChatGPT, Claude, or Gemini would be.`;
+          // Stream from LLM with system prompt for quality responses
+          const systemPrompt = `You are a helpful AI personal assistant. Be concise and focused - provide the most accurate and relevant answer without unnecessary fluff. Match your response length to the complexity of the question. For simple questions, be brief. For complex questions, provide thorough but efficient explanations. Be friendly and conversational, like the best of ChatGPT, Claude, and Gemini combined.`;
 
           const llmStream = routeToLLM(
             modelSelection.model,
