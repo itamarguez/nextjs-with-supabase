@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { Message as MessageType } from '@/lib/types';
 import { Message } from './message';
+import { LoadingIndicator } from './loading-indicator';
 
 interface MessageListProps {
   messages: MessageType[];
@@ -41,22 +42,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
             <Message key={message.id} message={message} />
           ))}
 
-          {isLoading && (
-            <div className="flex gap-4 p-4 bg-muted/50">
-              <div className="flex-shrink-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">
-                  🤖
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-primary"></div>
-                </div>
-              </div>
-            </div>
-          )}
+          {isLoading && <LoadingIndicator />}
         </div>
       )}
 

@@ -9,6 +9,7 @@ import { Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Analytics } from '@/lib/analytics/tracker';
 import ReactMarkdown from 'react-markdown';
+import { LoadingIndicator } from '@/components/chat/loading-indicator';
 
 interface Message {
   id: string;
@@ -255,6 +256,9 @@ export function TrialChat() {
                   )}
                 </div>
               ))}
+
+              {/* Loading Indicator */}
+              {isLoading && !streamingMessage && <LoadingIndicator />}
             </div>
           )}
           <div ref={messagesEndRef} />
