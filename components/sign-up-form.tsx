@@ -52,17 +52,8 @@ export function SignUpForm({
 
       if (error) throw error;
 
-      // Create user profile (in case trigger doesn't exist)
-      if (data.user) {
-        try {
-          await fetch('/api/fix-profile', {
-            method: 'POST',
-          });
-        } catch (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Continue anyway - profile will be created on first login
-        }
-      }
+      // Profile is automatically created by database trigger
+      // No need to call API endpoint
 
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
