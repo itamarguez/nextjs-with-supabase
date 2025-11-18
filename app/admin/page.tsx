@@ -136,23 +136,64 @@ export default async function AdminDashboard() {
   const monthTotalCost = (Object.values(monthCosts) as number[]).reduce((sum, cost) => sum + cost, 0);
 
   // ============================================
+  // ANONYMOUS TRIAL ANALYTICS
+  // ============================================
+
+  // Get all anonymous trial conversations
+  const { data: anonymousConversations } = await supabase
+    .from('anonymous_conversations')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  // Calculate unique trial sessions (unique session_ids)
+  const uniqueTrialSessions = new Set(
+    anonymousConversations?.map(c => c.session_id) || []
+  ).size;
+
+  // Trial conversations in different time periods
+  const todayTrialConvos = anonymousConversations?.filter(
+    c => new Date(c.created_at) >= today
+  ) || [];
+  const weekTrialConvos = anonymousConversations?.filter(
+    c => new Date(c.created_at) >= weekAgo
+  ) || [];
+  const monthTrialConvos = anonymousConversations?.filter(
+    c => new Date(c.created_at) >= monthAgo
+  ) || [];
+
+  // Device breakdown for trial users
+  const trialDeviceBreakdown = (anonymousConversations || []).reduce((acc, c) => {
+    const device = c.device_type || 'unknown';
+    acc[device] = (acc[device] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Top countries for trial users
+  const trialCountries = (anonymousConversations || []).reduce((acc, c) => {
+    const country = c.country_code || 'unknown';
+    acc[country] = (acc[country] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Most common trial questions (first question per session)
+  const firstQuestions = new Map<string, string>();
+  (anonymousConversations || [])
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .forEach(c => {
+      if (!firstQuestions.has(c.session_id)) {
+        firstQuestions.set(c.session_id, c.user_prompt);
+      }
+    });
+
+  // ============================================
   // USER ACTIVITY & CONVERSION METRICS
   // ============================================
 
-  // Trial conversions
-  const { data: trialSessions } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('is_trial_user', true);
-
-  const { data: convertedSessions } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('is_trial_user', true)
-    .eq('did_sign_up', true);
-
-  const conversionRate = trialSessions && trialSessions.length > 0
-    ? ((convertedSessions?.length || 0) / trialSessions.length) * 100
+  // Trial conversions (from trial to authenticated user)
+  // This is an approximation - we'll consider users who signed up after using trial
+  const totalSignups = allProfiles?.length || 0;
+  const estimatedConversionRate = uniqueTrialSessions > 0
+    ? ((totalSignups / uniqueTrialSessions) * 100)
     : 0;
 
   // ============================================
@@ -236,14 +277,14 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardDescription>Conversion Rate</CardDescription>
+              <CardDescription>Trial → Signup Rate</CardDescription>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </div>
-            <CardTitle className="text-3xl">{conversionRate.toFixed(1)}%</CardTitle>
+            <CardTitle className="text-3xl">{estimatedConversionRate.toFixed(1)}%</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {convertedSessions?.length || 0} / {trialSessions?.length || 0} trials
+              {totalSignups} signups / {uniqueTrialSessions} trials
             </p>
           </CardContent>
         </Card>
@@ -310,6 +351,112 @@ export default async function AdminDashboard() {
                   <div key={model} className="flex justify-between text-sm">
                     <span className="text-muted-foreground truncate">{model}</span>
                     <span className="font-medium">${(cost as number).toFixed(4)}</span>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trial Analytics */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold">Trial Analytics</h2>
+          <p className="text-muted-foreground">Anonymous user activity before signup</p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Trial Sessions</CardTitle>
+              <CardDescription>Unique anonymous users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{uniqueTrialSessions}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {anonymousConversations?.length || 0} total conversations
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Trial Activity</CardTitle>
+              <CardDescription>By time period</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Today:</span>
+                  <span className="font-medium">{todayTrialConvos.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">This week:</span>
+                  <span className="font-medium">{weekTrialConvos.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">This month:</span>
+                  <span className="font-medium">{monthTrialConvos.length}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Device Breakdown</CardTitle>
+              <CardDescription>Trial user devices</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(trialDeviceBreakdown)
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .slice(0, 3)
+                  .map(([device, count]) => (
+                    <div key={device} className="flex justify-between">
+                      <span className="text-sm text-muted-foreground capitalize">{device}:</span>
+                      <span className="font-medium">{count as number}</span>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Countries</CardTitle>
+              <CardDescription>Trial user locations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(trialCountries)
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .slice(0, 3)
+                  .map(([country, count]) => (
+                    <div key={country} className="flex justify-between">
+                      <span className="text-sm text-muted-foreground uppercase">{country}:</span>
+                      <span className="font-medium">{count as number}</span>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sample Trial Questions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Trial Questions</CardTitle>
+            <CardDescription>First questions from trial users (last 10 sessions)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Array.from(firstQuestions.entries())
+                .slice(0, 10)
+                .map(([sessionId, question]) => (
+                  <div key={sessionId} className="border-l-2 border-primary/20 pl-3 py-1">
+                    <p className="text-sm">{question}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Session: {sessionId.substring(0, 20)}...</p>
                   </div>
                 ))}
             </div>
