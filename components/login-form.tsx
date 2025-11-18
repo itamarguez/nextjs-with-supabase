@@ -34,6 +34,10 @@ export function LoginForm({
     setError(null);
 
     try {
+      // CRITICAL: Clear any existing session first
+      // This prevents old sessions from persisting when logging in with different account
+      await supabase.auth.signOut();
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,

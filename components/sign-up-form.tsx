@@ -41,6 +41,10 @@ export function SignUpForm({
     }
 
     try {
+      // CRITICAL: Clear any existing session first
+      // This prevents old sessions from persisting when signing up with new email
+      await supabase.auth.signOut();
+
       // Sign up the user
       const { data, error } = await supabase.auth.signUp({
         email,

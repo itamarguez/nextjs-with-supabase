@@ -12,6 +12,10 @@ export function GoogleAuthButton() {
     const supabase = createClient();
 
     try {
+      // CRITICAL: Clear any existing session first
+      // This prevents old sessions from persisting when signing in with different Google account
+      await supabase.auth.signOut();
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
