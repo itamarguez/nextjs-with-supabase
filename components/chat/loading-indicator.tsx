@@ -14,12 +14,12 @@ const LOADING_STAGES: LoadingStage[] = [
   {
     icon: <Brain className="h-5 w-5" />,
     text: 'Analyzing your prompt...',
-    duration: 1000,
+    duration: 2000, // 2 seconds
   },
   {
     icon: <Sparkles className="h-5 w-5" />,
     text: 'Selecting the best LLM for this task...',
-    duration: 1500,
+    duration: 3000, // 3 seconds
   },
   {
     icon: <MessageSquare className="h-5 w-5" />,
