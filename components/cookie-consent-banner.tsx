@@ -143,10 +143,10 @@ export function CookieConsentBanner() {
                   <strong className="text-foreground">Essential Cookies:</strong> Required for authentication, trial message tracking, and security. These cannot be disabled.
                 </div>
                 <div>
-                  <strong className="text-foreground">Analytics Cookies (Optional):</strong> Help us understand how visitors use the site to improve user experience. Currently, we only use basic session tracking.
+                  <strong className="text-foreground">Analytics Cookies (Optional):</strong> Help us understand how visitors use the site to improve user experience. May be anonymized and shared with partners.
                 </div>
                 <div>
-                  <strong className="text-foreground">Marketing Cookies:</strong> We do not use any marketing or advertising cookies.
+                  <strong className="text-foreground">Marketing Cookies (Future):</strong> Not yet implemented. When available, will show relevant ads. You can opt-out anytime.
                 </div>
               </div>
             </details>

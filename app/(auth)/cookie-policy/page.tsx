@@ -103,9 +103,28 @@ export default function CookiePolicyPage() {
           <strong>Note:</strong> We do NOT use Google Analytics, Facebook Pixel, or any third-party tracking cookies. All analytics are collected directly by our application.
         </p>
 
-        <h3>3. Marketing Cookies</h3>
-        <p className="font-semibold text-green-600 dark:text-green-400">
-          ✅ We do NOT use any marketing, advertising, or remarketing cookies.
+        <h3>3. Marketing Cookies (Future - Not Yet Implemented)</h3>
+        <p>
+          We plan to introduce <strong>optional marketing cookies</strong> in the future to support the free tier with non-intrusive advertising.
+        </p>
+
+        <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-md border-l-4 border-blue-500 my-4">
+          <p className="font-semibold mb-2">🔮 Planned Marketing Cookies (Coming Soon)</p>
+          <p className="text-sm mb-2">When implemented, marketing cookies will:</p>
+          <ul className="text-sm">
+            <li><strong>Require explicit consent</strong> (opt-in for EU users per GDPR)</li>
+            <li><strong>Be optional</strong> (can opt-out anytime or upgrade to remove ads)</li>
+            <li><strong>Show contextual ads</strong> based on your current prompt category (coding, creative, etc.)</li>
+            <li><strong>NOT track you across websites</strong> (no third-party tracking pixels)</li>
+          </ul>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          We will update this Cookie Policy and notify users via email before any marketing cookies are implemented. You will be given the choice to accept or reject marketing cookies at that time.
+        </p>
+
+        <p className="mt-4 font-semibold text-green-600 dark:text-green-400">
+          ✅ Currently: We do NOT use any marketing, advertising, or remarketing cookies.
         </p>
 
         <h2>Third-Party Cookies</h2>
