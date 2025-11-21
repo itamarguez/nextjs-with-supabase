@@ -146,7 +146,7 @@ export async function* routeToLLM(
 }
 
 /**
- * Stream from OpenAI API
+ * Stream from OpenAI API (handles both streaming and non-streaming models)
  */
 async function* streamOpenAI(
   model: string,
@@ -159,6 +159,56 @@ async function* streamOpenAI(
     throw new Error('OPENAI_API_KEY not configured');
   }
 
+  const modelConfig = MODEL_CONFIGS[model];
+  const supportsStreaming = modelConfig?.supports_streaming ?? true;
+
+  // For non-streaming models (like o1), make a single request
+  if (!supportsStreaming) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`OpenAI API error: ${error}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    const inputTokens = data.usage?.prompt_tokens || 0;
+    const outputTokens = data.usage?.completion_tokens || 0;
+
+    // Yield the full response as a single chunk
+    yield {
+      text: content,
+      done: false,
+    };
+
+    // Then yield done with token usage
+    yield {
+      text: '',
+      done: true,
+      tokensUsed: {
+        input: inputTokens,
+        output: outputTokens,
+        total: inputTokens + outputTokens,
+      },
+    };
+
+    return;
+  }
+
+  // For streaming models, use the original streaming logic
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {

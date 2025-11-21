@@ -90,10 +90,10 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     min_tier: 'unlimited',
   },
 
-  'claude-3-5-sonnet': {
-    name: 'claude-3-5-sonnet',
+  'claude-3-5-sonnet-20241022': {
+    name: 'claude-3-5-sonnet-20241022',
     provider: 'anthropic',
-    displayName: 'Claude 3.5 Sonnet',
+    displayName: 'Claude 3.5 Sonnet V2',
     cost_per_1m_input: 3.00,
     cost_per_1m_output: 15.00,
     max_context_window: 200000,
@@ -105,7 +105,51 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
       casual: 2,
       data_analysis: 2,
     },
+    min_tier: 'pro',
+  },
+
+  // ============================================
+  // REASONING MODELS (Pro & Unlimited)
+  // ============================================
+  'o1-mini': {
+    name: 'o1-mini',
+    provider: 'openai',
+    displayName: 'o1-mini (Reasoning)',
+    cost_per_1m_input: 3.00,
+    cost_per_1m_output: 12.00,
+    max_context_window: 128000,
+    supports_streaming: false, // o1 models don't support streaming
+    lmarena_ranks: {
+      coding: 1, // Excellent for coding
+      creative: 3, // Not ideal for creative tasks
+      math: 1, // Best for math
+      casual: 4, // Overkill for casual
+      data_analysis: 1, // Great for analysis
+    },
+    min_tier: 'pro',
+    // Special: Only use for coding, math, data_analysis tasks
+    preferred_categories: ['coding', 'math', 'data_analysis'],
+  },
+
+  'o1': {
+    name: 'o1',
+    provider: 'openai',
+    displayName: 'o1 (Advanced Reasoning)',
+    cost_per_1m_input: 15.00,
+    cost_per_1m_output: 60.00,
+    max_context_window: 200000,
+    supports_streaming: false,
+    lmarena_ranks: {
+      coding: 1, // Best reasoning for complex code
+      creative: 3,
+      math: 1, // PhD-level math
+      casual: 5, // Way too expensive for casual
+      data_analysis: 1,
+    },
     min_tier: 'unlimited',
+    // STRICT CAP: Max 200K tokens/month per user for cost control
+    monthly_token_cap: 200000,
+    preferred_categories: ['coding', 'math', 'data_analysis'],
   },
 };
 
@@ -143,6 +187,7 @@ export function calculateCost(
 
 /**
  * Get the best model for a task category and tier
+ * Respects preferred_categories for reasoning models
  */
 export function getBestModelForTask(
   category: string,
@@ -150,14 +195,40 @@ export function getBestModelForTask(
 ): ModelConfig | null {
   const availableModels = getModelsForTier(tier);
 
-  // Sort by rank for this category (lower rank = better)
-  const sorted = availableModels
-    .filter((model) => model.lmarena_ranks[category as keyof typeof model.lmarena_ranks])
-    .sort((a, b) => {
-      const rankA = a.lmarena_ranks[category as keyof typeof a.lmarena_ranks];
-      const rankB = b.lmarena_ranks[category as keyof typeof b.lmarena_ranks];
-      return rankA - rankB;
+  // Filter models:
+  // 1. Must have ranking for this category
+  // 2. If model has preferred_categories, only use for those categories
+  const eligibleModels = availableModels
+    .filter((model) => {
+      // Must have a rank for this category
+      if (!model.lmarena_ranks[category as keyof typeof model.lmarena_ranks]) {
+        return false;
+      }
+
+      // If model specifies preferred_categories, only use for those
+      if (model.preferred_categories && model.preferred_categories.length > 0) {
+        return model.preferred_categories.includes(category as any);
+      }
+
+      // Otherwise, model is eligible for all categories
+      return true;
     });
+
+  // Sort by rank for this category (lower rank = better)
+  // For same rank, prefer cheaper models (cost-optimized routing)
+  const sorted = eligibleModels.sort((a, b) => {
+    const rankA = a.lmarena_ranks[category as keyof typeof a.lmarena_ranks];
+    const rankB = b.lmarena_ranks[category as keyof typeof b.lmarena_ranks];
+
+    // If ranks are equal, prefer cheaper model
+    if (rankA === rankB) {
+      const avgCostA = (a.cost_per_1m_input + a.cost_per_1m_output) / 2;
+      const avgCostB = (b.cost_per_1m_input + b.cost_per_1m_output) / 2;
+      return avgCostA - avgCostB;
+    }
+
+    return rankA - rankB;
+  });
 
   return sorted[0] || null;
 }
@@ -186,12 +257,13 @@ export const TIER_PRICING = {
     price: 12,
     monthlyTokens: '1M tokens/month',
     requestsPerDay: '1,000 requests/day',
-    models: 'Premium models',
+    models: 'Premium models + Reasoning',
     features: [
       '1M tokens per month',
       'Up to 1,000 requests per day',
-      'Access to premium models such as GPT-4o, GPT-5, Claude Sonnet, and similar',
-      'Larger context windows (32K)',
+      'Access to premium models: GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
+      'o1-mini reasoning model for coding & math tasks',
+      'Larger context windows (128-200K)',
       'Priority support',
     ],
   },
@@ -200,11 +272,13 @@ export const TIER_PRICING = {
     price: 49,
     monthlyTokens: '10M tokens/month',
     requestsPerDay: '10,000 requests/day',
-    models: 'All models',
+    models: 'All models + Advanced Reasoning',
     features: [
       'Up to 10M tokens per month',
       'Up to 10,000 requests per day',
-      'Access to all models (GPT-5, Claude Sonnet, Gemini Pro, and similar)',
+      'Access to all premium models: GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
+      'o1-mini reasoning for coding, math & analysis',
+      'o1 advanced reasoning (capped at 200K tokens/month)',
       'Maximum context windows (200K)',
       'Priority queue',
       'Dedicated support',

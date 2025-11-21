@@ -103,6 +103,10 @@ export interface ModelConfig {
 
   // Access control
   min_tier: UserTier;
+
+  // Optional: Reasoning models special controls
+  preferred_categories?: TaskCategory[]; // Only use for these task types
+  monthly_token_cap?: number; // Max tokens per user per month (for expensive models)
 }
 
 export interface RateLimitResult {
