@@ -67,9 +67,7 @@ export const metadata: Metadata = {
     creator: "@nomorefomo",
   },
   verification: {
-    // Add these later when you have them
-    // google: "your-google-verification-code",
-    // yandex: "your-yandex-verification-code",
+    google: "-XjKCwF8yH4zwZkjqvrGFXySCPiitjJTtLbLixd-Vr8",
   },
   alternates: {
     canonical: defaultUrl,
