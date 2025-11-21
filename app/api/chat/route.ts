@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { selectModelForPrompt } from '@/lib/llm/model-selector';
 import { routeToLLMWithFailover } from '@/lib/llm/router';
-import { calculateCost } from '@/lib/llm/models';
+import { calculateCost, MODEL_CONFIGS } from '@/lib/llm/models';
 import { promptCache } from '@/lib/cache/prompt-cache';
 import {
   checkRateLimit,
@@ -15,6 +15,8 @@ import {
   canUsePremiumRequest,
   incrementPremiumRequest,
   getTierLimits,
+  checkModelTokenCap,
+  updateModelTokenUsage,
 } from '@/lib/rate-limiter';
 import { checkIPRateLimit, getClientIP, IP_RATE_LIMITS } from '@/lib/ip-rate-limiter';
 import { addMessage, getRecentMessages } from '@/lib/supabase/messages';
@@ -283,6 +285,28 @@ export async function POST(req: NextRequest) {
     // Record request for rate limiting
     await recordRequest(user.id);
 
+    // Check model-specific token cap (for models like o1 with monthly_token_cap)
+    const modelConfig = MODEL_CONFIGS[modelSelection.model];
+    if (modelConfig?.monthly_token_cap) {
+      const modelCapCheck = await checkModelTokenCap(
+        user.id,
+        modelSelection.model,
+        modelSelection.estimatedTokens,
+        modelConfig.monthly_token_cap
+      );
+
+      if (!modelCapCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: modelCapCheck.reason,
+            limitType: modelCapCheck.limitType,
+            retryAfter: modelCapCheck.retryAfter,
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     // Get country code from IP
     const countryCode = await countryCodePromise;
 
@@ -395,6 +419,16 @@ export async function POST(req: NextRequest) {
                 cost
               );
               await updateTokenUsage(user.id, inputTokens + outputTokens, cost);
+
+              // Update model-specific token usage if model has a monthly cap
+              const modelConfig = MODEL_CONFIGS[modelSelection.model];
+              if (modelConfig?.monthly_token_cap) {
+                await updateModelTokenUsage(
+                  user.id,
+                  modelSelection.model,
+                  inputTokens + outputTokens
+                );
+              }
 
               // If user used a premium model, increment premium request counter
               if (modelSelection.isPremium && profile.tier === 'free') {

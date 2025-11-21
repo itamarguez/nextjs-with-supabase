@@ -32,8 +32,9 @@ const TIER_LIMITS: Record<string, TierLimits> = {
       'gpt-4o-mini',
       'gemini-2.0-flash-thinking-exp-01-21',
       'claude-3-5-haiku-20241022',
-      'gpt-4o', // NEW: Pro tier now gets GPT-4o!
-      'claude-3-5-sonnet', // NEW: Pro tier now gets Claude Sonnet!
+      'gpt-4o',
+      'claude-3-5-sonnet-20241022',
+      'o1-mini', // NEW: Pro tier gets o1-mini reasoning
     ],
     max_context_window: 32000,
     can_use_premium_models: true,
@@ -52,7 +53,9 @@ const TIER_LIMITS: Record<string, TierLimits> = {
       'gemini-2.0-flash-thinking-exp-01-21',
       'claude-3-5-haiku-20241022',
       'gpt-4o',
-      'claude-3-5-sonnet',
+      'claude-3-5-sonnet-20241022',
+      'o1-mini', // Unlimited tier gets o1-mini
+      'o1', // NEW: Unlimited tier gets o1 (capped at 200K tokens/month)
     ],
     max_context_window: 200000,
     can_use_premium_models: true,
@@ -540,4 +543,96 @@ export async function incrementPremiumRequest(userId: string): Promise<void> {
  */
 export function getTierLimits(tier: string): TierLimits {
   return TIER_LIMITS[tier];
+}
+
+/**
+ * Check if user can use a specific model based on monthly token cap
+ * Used for expensive models like o1 that have per-model limits
+ */
+export async function checkModelTokenCap(
+  userId: string,
+  modelName: string,
+  estimatedTokens: number,
+  modelCap?: number
+): Promise<RateLimitResult> {
+  // If no cap defined, allow
+  if (!modelCap) {
+    return { allowed: true };
+  }
+
+  const supabase = await createClient();
+  const currentMonth = new Date();
+  currentMonth.setDate(1);
+  currentMonth.setHours(0, 0, 0, 0);
+
+  // Get current month's usage for this model
+  const { data: usage } = await supabase
+    .from('model_token_usage')
+    .select('tokens_used')
+    .eq('user_id', userId)
+    .eq('model_name', modelName)
+    .eq('month_start', currentMonth.toISOString().split('T')[0])
+    .single();
+
+  const tokensUsed = usage?.tokens_used || 0;
+  const tokensRemaining = modelCap - tokensUsed;
+
+  if (tokensRemaining < estimatedTokens) {
+    return {
+      allowed: false,
+      reason: `Monthly token limit for ${modelName} exceeded (${modelCap} tokens/month)`,
+      limitType: 'monthly_tokens',
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Update model-specific token usage
+ * Called after using a model with a monthly cap (like o1)
+ */
+export async function updateModelTokenUsage(
+  userId: string,
+  modelName: string,
+  tokensUsed: number
+): Promise<void> {
+  const supabase = await createClient();
+
+  // Use the database function to upsert
+  const { data, error } = await supabase.rpc('update_model_token_usage', {
+    p_user_id: userId,
+    p_model_name: modelName,
+    p_tokens_to_add: tokensUsed,
+  });
+
+  if (error) {
+    console.error('Error updating model token usage:', error);
+  }
+}
+
+/**
+ * Get model-specific token usage for current month
+ */
+export async function getModelTokenUsage(
+  userId: string,
+  modelName: string
+): Promise<{ tokensUsed: number; monthStart: Date }> {
+  const supabase = await createClient();
+  const currentMonth = new Date();
+  currentMonth.setDate(1);
+  currentMonth.setHours(0, 0, 0, 0);
+
+  const { data } = await supabase
+    .from('model_token_usage')
+    .select('tokens_used, month_start')
+    .eq('user_id', userId)
+    .eq('model_name', modelName)
+    .eq('month_start', currentMonth.toISOString().split('T')[0])
+    .single();
+
+  return {
+    tokensUsed: data?.tokens_used || 0,
+    monthStart: data?.month_start ? new Date(data.month_start) : currentMonth,
+  };
 }
