@@ -1,12 +1,12 @@
 // NoMoreFOMO Model Configuration
-// Based on LMArena rankings and current pricing (as of Jan 2025)
+// Based on LMArena rankings and current pricing (as of November 2025)
 
 import { ModelConfig, UserTier } from '../types';
 
 /**
  * MODEL COSTS (per 1M tokens)
  * These are ADMIN ONLY - never exposed to users
- * Updated: January 2025
+ * Updated: November 2025
  */
 export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   // ============================================
@@ -21,11 +21,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 128000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 2,
-      creative: 1,
-      math: 1,
-      casual: 2,
-      data_analysis: 2,
+      coding: 4,
+      creative: 4,
+      math: 3,
+      casual: 3,
+      data_analysis: 3,
     },
     min_tier: 'free',
   },
@@ -39,11 +39,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 1000000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 3,
-      creative: 3,
-      math: 2,
-      casual: 1,
-      data_analysis: 1,
+      coding: 5,
+      creative: 4,
+      math: 4,
+      casual: 2,
+      data_analysis: 3,
     },
     min_tier: 'free',  // Free users get Gemini for casual & data_analysis
   },
@@ -51,6 +51,24 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   // ============================================
   // PRO TIER MODELS (Better performance)
   // ============================================
+  'gpt-5-mini': {
+    name: 'gpt-5-mini',
+    provider: 'openai',
+    displayName: 'GPT-5 Mini',
+    cost_per_1m_input: 0.25,
+    cost_per_1m_output: 2.00,
+    max_context_window: 128000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 3,
+      creative: 3,
+      math: 2,
+      casual: 2,
+      data_analysis: 2,
+    },
+    min_tier: 'pro',
+  },
+
   'claude-3-5-haiku-20241022': {
     name: 'claude-3-5-haiku-20241022',
     provider: 'anthropic',
@@ -60,18 +78,73 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 200000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 1,
-      creative: 2,
-      math: 3,
-      casual: 3,
-      data_analysis: 3,
+      coding: 4,
+      creative: 5,
+      math: 5,
+      casual: 4,
+      data_analysis: 4,
     },
     min_tier: 'pro',
   },
 
   // ============================================
-  // UNLIMITED TIER (Premium models)
+  // UNLIMITED TIER (Premium models - November 2025)
   // ============================================
+  'gpt-5': {
+    name: 'gpt-5',
+    provider: 'openai',
+    displayName: 'GPT-5',
+    cost_per_1m_input: 1.25,
+    cost_per_1m_output: 10.00,
+    max_context_window: 128000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 2,
+      creative: 1,
+      math: 2,
+      casual: 1,
+      data_analysis: 1,
+    },
+    min_tier: 'unlimited',
+  },
+
+  'claude-sonnet-4-5-20250929': {
+    name: 'claude-sonnet-4-5-20250929',
+    provider: 'anthropic',
+    displayName: 'Claude Sonnet 4.5',
+    cost_per_1m_input: 3.00,
+    cost_per_1m_output: 15.00,
+    max_context_window: 200000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 1,
+      creative: 2,
+      math: 1,
+      casual: 2,
+      data_analysis: 2,
+    },
+    min_tier: 'unlimited',
+  },
+
+  'gemini-3-pro-preview': {
+    name: 'gemini-3-pro-preview',
+    provider: 'google',
+    displayName: 'Gemini 3 Pro',
+    cost_per_1m_input: 2.00,
+    cost_per_1m_output: 12.00,
+    max_context_window: 1000000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 1,
+      creative: 1,
+      math: 1,
+      casual: 1,
+      data_analysis: 1,
+    },
+    min_tier: 'unlimited',
+  },
+
+  // Legacy models (still available but outranked by newer models)
   'gpt-4o': {
     name: 'gpt-4o',
     provider: 'openai',
@@ -81,13 +154,13 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 128000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 2,
-      creative: 1,
-      math: 1,
-      casual: 1,
-      data_analysis: 1,
+      coding: 3,
+      creative: 3,
+      math: 3,
+      casual: 3,
+      data_analysis: 3,
     },
-    min_tier: 'unlimited',
+    min_tier: 'pro',
   },
 
   'claude-3-5-sonnet-20241022': {
@@ -99,18 +172,39 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 200000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 1,
-      creative: 2,
+      coding: 2,
+      creative: 3,
       math: 2,
-      casual: 2,
+      casual: 3,
       data_analysis: 2,
     },
     min_tier: 'pro',
   },
 
   // ============================================
-  // REASONING MODELS (Pro & Unlimited)
+  // REASONING MODELS (Pro & Unlimited - November 2025)
   // ============================================
+  'gpt-5.1': {
+    name: 'gpt-5.1',
+    provider: 'openai',
+    displayName: 'GPT-5.1 (Advanced Reasoning)',
+    cost_per_1m_input: 1.25,
+    cost_per_1m_output: 10.00,
+    max_context_window: 128000,
+    supports_streaming: false, // GPT-5.1 uses thinking mode (non-streaming like o1)
+    lmarena_ranks: {
+      coding: 1, // Top-tier reasoning for coding
+      creative: 4, // Not ideal for creative tasks
+      math: 1, // Excellent for complex math
+      casual: 5, // Overkill for casual
+      data_analysis: 1, // Best for deep analysis
+    },
+    min_tier: 'unlimited',
+    // STRICT CAP: Max 200K tokens/month per user for cost control
+    monthly_token_cap: 200000,
+    preferred_categories: ['coding', 'math', 'data_analysis'],
+  },
+
   'o1-mini': {
     name: 'o1-mini',
     provider: 'openai',
@@ -120,11 +214,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 128000,
     supports_streaming: false, // o1 models don't support streaming
     lmarena_ranks: {
-      coding: 1, // Excellent for coding
-      creative: 3, // Not ideal for creative tasks
-      math: 1, // Best for math
-      casual: 4, // Overkill for casual
-      data_analysis: 1, // Great for analysis
+      coding: 2, // Good for coding but outranked by GPT-5.1
+      creative: 4, // Not ideal for creative tasks
+      math: 2, // Good for math but outranked
+      casual: 5, // Overkill for casual
+      data_analysis: 2, // Good for analysis
     },
     min_tier: 'pro',
     // Special: Only use for coding, math, data_analysis tasks
@@ -140,16 +234,16 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 200000,
     supports_streaming: false,
     lmarena_ranks: {
-      coding: 1, // Best reasoning for complex code
-      creative: 3,
-      math: 1, // PhD-level math
-      casual: 5, // Way too expensive for casual
-      data_analysis: 1,
+      coding: 2, // Excellent but expensive, GPT-5.1 is better value
+      creative: 5,
+      math: 1, // Still best for PhD-level math
+      casual: 6, // Way too expensive for casual
+      data_analysis: 2,
     },
     min_tier: 'unlimited',
     // STRICT CAP: Max 200K tokens/month per user for cost control
     monthly_token_cap: 200000,
-    preferred_categories: ['coding', 'math', 'data_analysis'],
+    preferred_categories: ['math'], // Now only preferred for extreme math tasks
   },
 };
 
@@ -236,6 +330,7 @@ export function getBestModelForTask(
 /**
  * TIER PRICING CONFIGURATION
  * For display to users considering upgrades
+ * Updated: November 2025 with latest models
  */
 export const TIER_PRICING = {
   free: {
@@ -247,7 +342,7 @@ export const TIER_PRICING = {
     features: [
       '100K tokens per month',
       'Up to 200 requests per day',
-      'Access to low-cost models such as GPT-4o mini, Gemini Flash, and similar',
+      'Access to low-cost models such as GPT-4o mini, Gemini 2.0 Flash, and similar',
       'Up to 10 premium model answers a month',
       'Might be showing ads (without influencing model\'s answer)',
     ],
@@ -261,7 +356,7 @@ export const TIER_PRICING = {
     features: [
       '1M tokens per month',
       'Up to 1,000 requests per day',
-      'Access to premium models: GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
+      'Access to premium models: GPT-5 Mini, GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
       'o1-mini reasoning model for coding & math tasks',
       'Larger context windows (128-200K)',
       'Priority support',
@@ -276,10 +371,10 @@ export const TIER_PRICING = {
     features: [
       'Up to 10M tokens per month',
       'Up to 10,000 requests per day',
-      'Access to all premium models: GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
-      'o1-mini reasoning for coding, math & analysis',
-      'o1 advanced reasoning (capped at 200K tokens/month)',
-      'Maximum context windows (200K)',
+      'Access to ALL latest models: GPT-5, Claude Sonnet 4.5, Gemini 3 Pro',
+      'GPT-5.1 advanced reasoning (capped at 200K tokens/month)',
+      'o1 PhD-level reasoning for extreme math (capped at 200K tokens/month)',
+      'Maximum context windows (up to 1M tokens)',
       'Priority queue',
       'Dedicated support',
     ],

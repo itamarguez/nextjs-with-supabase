@@ -16,17 +16,17 @@ import { PageViewTracker } from '@/components/analytics/page-view-tracker';
 // Force dynamic rendering to check auth on every request
 export const dynamic = 'force-dynamic';
 
-// Page-specific metadata for better SEO
+// Page-specific metadata for better SEO (Updated November 2025)
 export const metadata: Metadata = {
-  title: 'NoMoreFOMO - Intelligent AI Router | GPT-4o, Claude, Gemini, o1',
-  description: 'Stop the LLM FOMO. Intelligent AI router that automatically picks the best model for your prompt. Compare GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, and o1 reasoning models. One subscription, all the best AI models. Try free with 3 messages.',
+  title: 'NoMoreFOMO - Intelligent AI Router | GPT-5, Claude 4.5, Gemini 3, GPT-5.1',
+  description: 'Stop the LLM FOMO. Intelligent AI router that automatically picks the best model for your prompt. Access GPT-5, Claude Sonnet 4.5, Gemini 3 Pro, and GPT-5.1 reasoning. One subscription, all the latest AI models. Try free with 3 messages.',
   keywords: [
     'AI router',
     'LLM comparison',
-    'GPT-4o',
-    'Claude 3.5 Sonnet',
-    'Gemini 2.0',
-    'o1 reasoning',
+    'GPT-5',
+    'GPT-5.1',
+    'Claude Sonnet 4.5',
+    'Gemini 3 Pro',
     'best AI model',
     'AI comparison tool',
     'ChatGPT alternative',
@@ -35,16 +35,17 @@ export const metadata: Metadata = {
     'LLM FOMO',
     'AI assistant',
     'cost-effective AI',
+    'November 2025',
   ],
   openGraph: {
     title: 'NoMoreFOMO - Stop the LLM FOMO, Get the Best AI Answer',
-    description: 'Intelligent AI router that automatically picks the best model (GPT-4o, Claude, Gemini, o1) for your prompt. $12/month vs $60/month for multiple subscriptions.',
+    description: 'Intelligent AI router that automatically picks the best model (GPT-5, Claude 4.5, Gemini 3, GPT-5.1) for your prompt. $12/month vs $80/month for multiple subscriptions.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NoMoreFOMO - Intelligent AI Router',
-    description: 'Automatically picks the best AI model for your prompt. GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, o1 reasoning - all in one place.',
+    title: 'NoMoreFOMO - Intelligent AI Router (Nov 2025)',
+    description: 'Automatically picks the best AI model for your prompt. GPT-5, Claude Sonnet 4.5, Gemini 3 Pro, GPT-5.1 reasoning - all in one place.',
   },
 };
 
