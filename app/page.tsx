@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,38 @@ import { PageViewTracker } from '@/components/analytics/page-view-tracker';
 
 // Force dynamic rendering to check auth on every request
 export const dynamic = 'force-dynamic';
+
+// Page-specific metadata for better SEO
+export const metadata: Metadata = {
+  title: 'NoMoreFOMO - Intelligent AI Router | GPT-4o, Claude, Gemini, o1',
+  description: 'Stop the LLM FOMO. Intelligent AI router that automatically picks the best model for your prompt. Compare GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, and o1 reasoning models. One subscription, all the best AI models. Try free with 3 messages.',
+  keywords: [
+    'AI router',
+    'LLM comparison',
+    'GPT-4o',
+    'Claude 3.5 Sonnet',
+    'Gemini 2.0',
+    'o1 reasoning',
+    'best AI model',
+    'AI comparison tool',
+    'ChatGPT alternative',
+    'multi-model AI',
+    'intelligent model selection',
+    'LLM FOMO',
+    'AI assistant',
+    'cost-effective AI',
+  ],
+  openGraph: {
+    title: 'NoMoreFOMO - Stop the LLM FOMO, Get the Best AI Answer',
+    description: 'Intelligent AI router that automatically picks the best model (GPT-4o, Claude, Gemini, o1) for your prompt. $12/month vs $60/month for multiple subscriptions.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NoMoreFOMO - Intelligent AI Router',
+    description: 'Automatically picks the best AI model for your prompt. GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, o1 reasoning - all in one place.',
+  },
+};
 
 export default async function HomePage() {
   const supabase = await createClient();
