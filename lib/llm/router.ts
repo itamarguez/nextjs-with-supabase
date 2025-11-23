@@ -162,20 +162,30 @@ async function* streamOpenAI(
   const modelConfig = MODEL_CONFIGS[model];
   const supportsStreaming = modelConfig?.supports_streaming ?? true;
 
+  // Some newer models (GPT-5, GPT-5.1, o1 series) only support temperature=1
+  const modelsWithFixedTemperature = ['gpt-5', 'gpt-5-mini', 'gpt-5.1', 'gpt-5.1-chat-latest', 'o1', 'o1-mini'];
+  const supportsCustomTemperature = !modelsWithFixedTemperature.includes(model);
+
   // For non-streaming models (like o1), make a single request
   if (!supportsStreaming) {
+    const requestBody: any = {
+      model,
+      messages,
+      stream: false,
+    };
+
+    // Only include temperature if the model supports custom values
+    if (supportsCustomTemperature) {
+      requestBody.temperature = temperature;
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        stream: false,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -209,19 +219,25 @@ async function* streamOpenAI(
   }
 
   // For streaming models, use the original streaming logic
+  const streamRequestBody: any = {
+    model,
+    messages,
+    stream: true,
+    stream_options: { include_usage: true },
+  };
+
+  // Only include temperature if the model supports custom values
+  if (supportsCustomTemperature) {
+    streamRequestBody.temperature = temperature;
+  }
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      stream: true,
-      stream_options: { include_usage: true },
-    }),
+    body: JSON.stringify(streamRequestBody),
   });
 
   if (!response.ok) {
