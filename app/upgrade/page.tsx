@@ -45,30 +45,26 @@ export default function UpgradePage() {
     setUpgradingTo(tier);
 
     try {
-      // Get the price ID from environment
-      const priceId =
-        tier === 'pro'
-          ? process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || 'price_1SSy2BDWrydnj4h1XV6SsJ8G'
-          : process.env.NEXT_PUBLIC_STRIPE_UNLIMITED_PRICE_ID || 'price_1SSy6ZDWrydnj4h1iqyMH3gF';
-
-      // Create checkout session
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      // Create LemonSqueezy checkout session
+      const response = await fetch('/api/lemonsqueezy/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, tier }),
+        body: JSON.stringify({ tier }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
       const { url } = await response.json();
 
-      // Redirect to Stripe checkout
+      // Redirect to LemonSqueezy checkout
       window.location.href = url;
     } catch (error) {
       console.error('Upgrade error:', error);
-      alert('Failed to start upgrade process. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to start upgrade process: ${errorMessage}\nPlease try again.`);
       setUpgradingTo(null);
     }
   };
