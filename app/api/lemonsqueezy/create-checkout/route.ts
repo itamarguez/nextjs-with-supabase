@@ -61,7 +61,14 @@ export async function POST(request: Request) {
       throw new Error('Failed to create checkout session');
     }
 
-    const checkoutUrl = checkout.data.attributes.url;
+    // Type assertion needed due to LemonSqueezy SDK type definitions
+    const checkoutUrl = (checkout.data as any).attributes?.url;
+
+    if (!checkoutUrl) {
+      console.error('[LEMONSQUEEZY] No checkout URL in response:', checkout.data);
+      throw new Error('No checkout URL returned');
+    }
+
     console.log('[LEMONSQUEEZY] Checkout created successfully:', checkoutUrl);
 
     return NextResponse.json({ url: checkoutUrl });
