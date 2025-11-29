@@ -56,16 +56,23 @@ export async function POST(request: Request) {
       },
     });
 
+    // Log the full response for debugging
+    console.log('[LEMONSQUEEZY] Full checkout response:', JSON.stringify(checkout, null, 2));
+
     if (!checkout.data) {
-      console.error('[LEMONSQUEEZY] Failed to create checkout:', checkout);
+      console.error('[LEMONSQUEEZY] Failed to create checkout - no data');
       throw new Error('Failed to create checkout session');
     }
 
-    // Type assertion needed due to LemonSqueezy SDK type definitions
-    const checkoutUrl = (checkout.data as any).attributes?.url;
+    // Try multiple possible response structures
+    const checkoutData = checkout.data as any;
+    const checkoutUrl = checkoutData.attributes?.url || checkoutData.url || (checkoutData as any);
 
-    if (!checkoutUrl) {
-      console.error('[LEMONSQUEEZY] No checkout URL in response:', checkout.data);
+    console.log('[LEMONSQUEEZY] Checkout data:', JSON.stringify(checkoutData, null, 2));
+    console.log('[LEMONSQUEEZY] Extracted URL:', checkoutUrl);
+
+    if (!checkoutUrl || typeof checkoutUrl !== 'string') {
+      console.error('[LEMONSQUEEZY] No valid checkout URL found');
       throw new Error('No checkout URL returned');
     }
 
