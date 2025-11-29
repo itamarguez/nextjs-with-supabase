@@ -56,24 +56,19 @@ export async function POST(request: Request) {
       },
     });
 
-    // Log the full response for debugging
-    console.log('[LEMONSQUEEZY] Full checkout response:', JSON.stringify(checkout, null, 2));
-
-    if (!checkout.data) {
-      console.error('[LEMONSQUEEZY] Failed to create checkout - no data');
-      throw new Error('Failed to create checkout session');
+    // Check for API errors
+    if (checkout.error) {
+      console.error('[LEMONSQUEEZY] API error:', checkout.error);
+      throw new Error(checkout.error.message || 'LemonSqueezy API error');
     }
 
-    // Try multiple possible response structures
-    const checkoutData = checkout.data as any;
-    const checkoutUrl = checkoutData.attributes?.url || checkoutData.url || (checkoutData as any);
+    // SDK returns {statusCode, error, data: {data: {attributes: {url}}}}
+    // We need checkout.data.data.attributes.url (two "data" levels!)
+    const checkoutUrl = checkout.data?.data?.attributes?.url;
 
-    console.log('[LEMONSQUEEZY] Checkout data:', JSON.stringify(checkoutData, null, 2));
-    console.log('[LEMONSQUEEZY] Extracted URL:', checkoutUrl);
-
-    if (!checkoutUrl || typeof checkoutUrl !== 'string') {
-      console.error('[LEMONSQUEEZY] No valid checkout URL found');
-      throw new Error('No checkout URL returned');
+    if (!checkoutUrl) {
+      console.error('[LEMONSQUEEZY] No checkout URL in response:', JSON.stringify(checkout, null, 2));
+      throw new Error('No checkout URL returned from LemonSqueezy');
     }
 
     console.log('[LEMONSQUEEZY] Checkout created successfully:', checkoutUrl);
