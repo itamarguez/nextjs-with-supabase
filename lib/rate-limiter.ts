@@ -15,7 +15,7 @@ const TIER_LIMITS: Record<string, TierLimits> = {
     requests_per_minute: 5,
     requests_per_hour: 50,
     requests_per_day: 200,
-    allowed_models: ['gpt-4o-mini', 'gemini-2.0-flash-thinking-exp-01-21'],
+    allowed_models: ['gpt-4o-mini', 'gemini-2.0-flash-exp'],
     max_context_window: 8000,
     can_use_premium_models: false,
     priority_queue: false,
@@ -30,7 +30,7 @@ const TIER_LIMITS: Record<string, TierLimits> = {
     requests_per_day: 1000,
     allowed_models: [
       'gpt-4o-mini',
-      'gemini-2.0-flash-thinking-exp-01-21',
+      'gemini-2.0-flash-exp',
       'claude-3-5-haiku-20241022',
       'gpt-4o',
       'claude-3-5-sonnet-20241022',
@@ -50,7 +50,7 @@ const TIER_LIMITS: Record<string, TierLimits> = {
     requests_per_day: 10000,
     allowed_models: [
       'gpt-4o-mini',
-      'gemini-2.0-flash-thinking-exp-01-21',
+      'gemini-2.0-flash-exp',
       'claude-3-5-haiku-20241022',
       'gpt-4o',
       'claude-3-5-sonnet-20241022',

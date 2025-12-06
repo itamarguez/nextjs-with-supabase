@@ -30,8 +30,8 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     min_tier: 'free',
   },
 
-  'gemini-2.0-flash-thinking-exp-01-21': {
-    name: 'gemini-2.0-flash-thinking-exp-01-21',
+  'gemini-2.0-flash-exp': {
+    name: 'gemini-2.0-flash-exp',
     provider: 'google',
     displayName: 'Gemini 2.0 Flash',
     cost_per_1m_input: 0.075,  // Estimated (currently free experimental, using Flash 1.5 pricing for analytics)

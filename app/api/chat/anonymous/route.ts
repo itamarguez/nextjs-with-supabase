@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
 
     // Select model for anonymous users
     // Rotate between models to show variety (GPT-4o-mini, then Gemini, then GPT-4o-mini, etc.)
-    const availableTrialModels = ['gpt-4o-mini', 'gemini-2.0-flash-thinking-exp-01-21'];
+    const availableTrialModels = ['gpt-4o-mini', 'gemini-2.0-flash-exp'];
     const rotatedModel = availableTrialModels[currentCount % availableTrialModels.length];
 
     // Get category analysis but override model for trial rotation

@@ -11,7 +11,7 @@ interface ModelBadgeProps {
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   'gpt-4o-mini': 'GPT-4o Mini',
-  'gemini-2.0-flash-thinking-exp-01-21': 'Gemini 2.0 Flash',
+  'gemini-2.0-flash-exp': 'Gemini 2.0 Flash',
   'claude-3-5-haiku-20241022': 'Claude Haiku',
   'gpt-4o': 'GPT-4o',
   'claude-3-5-sonnet': 'Claude Sonnet',

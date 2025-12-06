@@ -14,7 +14,7 @@ export const MODEL_FAILOVER_CHAINS: Record<string, string[]> = {
     'claude-3-5-haiku-20241022', // Fast, efficient
     'gpt-4o',                // Higher quality fallback
   ],
-  'gemini-2.0-flash-thinking-exp-01-21': [
+  'gemini-2.0-flash-exp': [
     'gpt-4o-mini',           // Cost-efficient first (most queries are simple)
     'gpt-4o',                // Advanced reasoning if needed
     'claude-3-5-sonnet-20241022', // High quality final fallback

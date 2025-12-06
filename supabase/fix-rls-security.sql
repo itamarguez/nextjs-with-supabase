@@ -29,13 +29,7 @@ CREATE POLICY "Service role can insert page views"
 CREATE POLICY "Admins can read page views"
   ON public.page_views
   FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.user_profiles
-      WHERE user_profiles.id = auth.uid()
-      AND user_profiles.tier = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- tier_limits: Everyone can read (reference data), only system can modify
 CREATE POLICY "Anyone can read tier limits"
@@ -68,13 +62,32 @@ CREATE POLICY "Service role can manage rate limits"
 -- ============================================================================
 -- This prevents search_path hijacking attacks
 
-ALTER FUNCTION public.get_current_month_start() SET search_path = public;
-ALTER FUNCTION public.get_or_create_model_token_usage(UUID, TEXT) SET search_path = public;
-ALTER FUNCTION public.update_model_token_usage(UUID, TEXT, INTEGER, INTEGER, NUMERIC) SET search_path = public;
-ALTER FUNCTION public.reset_monthly_usage() SET search_path = public;
-ALTER FUNCTION public.is_admin() SET search_path = public;
-ALTER FUNCTION public.update_updated_at_column() SET search_path = public;
-ALTER FUNCTION public.create_user_profile() SET search_path = public;
+-- Use DO block to safely alter functions (won't fail if function doesn't exist)
+DO $$
+DECLARE
+  func_name text;
+  func_args text;
+BEGIN
+  -- Loop through all public functions and set search_path
+  FOR func_name, func_args IN
+    SELECT p.proname, pg_get_function_identity_arguments(p.oid)
+    FROM pg_proc p
+    JOIN pg_namespace n ON p.pronamespace = n.oid
+    WHERE n.nspname = 'public'
+    AND p.proname IN (
+      'get_current_month_start',
+      'get_or_create_model_token_usage',
+      'update_model_token_usage',
+      'reset_monthly_usage',
+      'is_admin',
+      'update_updated_at_column',
+      'create_user_profile'
+    )
+  LOOP
+    EXECUTE format('ALTER FUNCTION public.%I(%s) SET search_path = public', func_name, func_args);
+    RAISE NOTICE 'Set search_path for function: %.%(%)', 'public', func_name, func_args;
+  END LOOP;
+END $$;
 
 -- ============================================================================
 -- VERIFY ALL SECURITY FIXES
