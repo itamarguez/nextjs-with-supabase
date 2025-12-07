@@ -1,12 +1,12 @@
 // NoMoreFOMO Model Configuration
-// Based on LMArena rankings and current pricing (as of November 2025)
+// Based on LMArena rankings and current pricing (as of December 2025)
 
 import { ModelConfig, UserTier } from '../types';
 
 /**
  * MODEL COSTS (per 1M tokens)
  * These are ADMIN ONLY - never exposed to users
- * Updated: November 2025
+ * Updated: December 2025
  */
 export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   // ============================================
@@ -88,7 +88,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
 
   // ============================================
-  // UNLIMITED TIER (Premium models - November 2025)
+  // UNLIMITED TIER (Premium models - December 2025)
   // ============================================
   'gpt-5': {
     name: 'gpt-5',
@@ -117,17 +117,17 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 200000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 1,
-      creative: 2,
-      math: 1,
-      casual: 2,
-      data_analysis: 2,
+      coding: 1, // BEST CODING MODEL IN THE WORLD (LMArena rank #8, 1448 ELO)
+      creative: 2, // Strong creative capabilities
+      math: 2, // Very good reasoning
+      casual: 2, // Good for general use
+      data_analysis: 1, // Excellent for code/data analysis
     },
     min_tier: 'unlimited',
   },
 
-  'gemini-3-pro-preview': {
-    name: 'gemini-3-pro-preview',
+  'gemini-3-pro': {
+    name: 'gemini-3-pro',
     provider: 'google',
     displayName: 'Gemini 3 Pro',
     cost_per_1m_input: 2.00,
@@ -135,13 +135,51 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 1000000,
     supports_streaming: true,
     lmarena_ranks: {
-      coding: 1,
-      creative: 1,
-      math: 1,
-      casual: 1,
-      data_analysis: 1,
+      coding: 2, // #1 overall (1491 ELO), but Claude Sonnet 4.5 beats it for coding
+      creative: 1, // Best for creative tasks
+      math: 2, // Strong but Claude Opus 4.5 slightly better
+      casual: 1, // Best for casual conversation
+      data_analysis: 2, // Strong general capability
     },
     min_tier: 'unlimited',
+  },
+
+  'gemini-2.5-pro': {
+    name: 'gemini-2.5-pro',
+    provider: 'google',
+    displayName: 'Gemini 2.5 Pro',
+    cost_per_1m_input: 1.25,
+    cost_per_1m_output: 5.00,
+    max_context_window: 1000000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 3,
+      creative: 2,
+      math: 3,
+      casual: 2,
+      data_analysis: 3,
+    },
+    min_tier: 'unlimited',
+  },
+
+  'claude-opus-4-5-20251101': {
+    name: 'claude-opus-4-5-20251101',
+    provider: 'anthropic',
+    displayName: 'Claude Opus 4.5',
+    cost_per_1m_input: 15.00,
+    cost_per_1m_output: 75.00,
+    max_context_window: 200000,
+    supports_streaming: true,
+    lmarena_ranks: {
+      coding: 2, // Rank #3 overall (1471 ELO), excellent for complex coding
+      creative: 2, // Very strong creative capabilities
+      math: 1, // Best for advanced reasoning and math
+      casual: 3, // Good but expensive for casual use
+      data_analysis: 1, // Excellent for deep analysis
+    },
+    min_tier: 'unlimited',
+    monthly_token_cap: 200000, // Expensive model, cap usage
+    preferred_categories: ['math', 'data_analysis'], // Use for complex reasoning tasks
   },
 
   // Legacy models (still available but outranked by newer models)
@@ -182,7 +220,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
 
   // ============================================
-  // REASONING MODELS (Pro & Unlimited - November 2025)
+  // REASONING MODELS (Pro & Unlimited - December 2025)
   // ============================================
   'gpt-5.1': {
     name: 'gpt-5.1',
@@ -193,11 +231,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     max_context_window: 128000,
     supports_streaming: false, // GPT-5.1 uses thinking mode (non-streaming like o1)
     lmarena_ranks: {
-      coding: 1, // Top-tier reasoning for coding
+      coding: 2, // LMArena rank #6 (1457 ELO), excellent reasoning
       creative: 4, // Not ideal for creative tasks
-      math: 1, // Excellent for complex math
+      math: 2, // Excellent for complex math, Claude Opus 4.5 slightly better
       casual: 5, // Overkill for casual
-      data_analysis: 1, // Best for deep analysis
+      data_analysis: 2, // Strong analysis, but Claude models edge it out
     },
     min_tier: 'unlimited',
     // STRICT CAP: Max 200K tokens/month per user for cost control
@@ -330,7 +368,7 @@ export function getBestModelForTask(
 /**
  * TIER PRICING CONFIGURATION
  * For display to users considering upgrades
- * Updated: November 2025 with latest models
+ * Updated: December 2025 with latest models
  */
 export const TIER_PRICING = {
   free: {
@@ -356,7 +394,7 @@ export const TIER_PRICING = {
     features: [
       '1M tokens per month',
       'Up to 1,000 requests per day',
-      'Access to premium models: GPT-5 Mini, GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku',
+      'Access to premium models: GPT-5 Mini, GPT-4o, Claude 3.5 Sonnet V2, Claude 3.5 Haiku, Gemini 2.5 Pro',
       'o1-mini reasoning model for coding & math tasks',
       'Larger context windows (128-200K)',
       'Priority support',
@@ -371,7 +409,7 @@ export const TIER_PRICING = {
     features: [
       'Up to 10M tokens per month',
       'Up to 10,000 requests per day',
-      'Access to ALL latest models: GPT-5, Claude Sonnet 4.5, Gemini 3 Pro',
+      'Access to ALL latest models: GPT-5, Claude Sonnet 4.5, Claude Opus 4.5, Gemini 3 Pro',
       'GPT-5.1 advanced reasoning (capped at 200K tokens/month)',
       'o1 PhD-level reasoning for extreme math (capped at 200K tokens/month)',
       'Maximum context windows (up to 1M tokens)',

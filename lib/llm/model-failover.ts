@@ -14,39 +14,76 @@ export const MODEL_FAILOVER_CHAINS: Record<string, string[]> = {
     'gpt-4o',                // Advanced reasoning if needed
     'claude-3-5-sonnet-20241022', // High quality final fallback
   ],
-  'gemini-1.5-pro-002': [
-    'gpt-4o',                // Premium tier
-    'claude-3-5-sonnet-20241022', // High quality
-    'claude-3-opus-20240229', // Maximum capability
+  'gemini-2.5-pro': [
+    'gpt-5',                 // Similar premium tier
+    'claude-sonnet-4-5-20250929', // Best coding model
+    'gemini-3-pro',          // Upgrade fallback
+  ],
+  'gemini-3-pro': [
+    'claude-sonnet-4-5-20250929', // Best coding alternative
+    'gpt-5',                 // Premium tier
+    'claude-opus-4-5-20251101', // Maximum capability
   ],
 
   // OpenAI GPT models -> fallback to Anthropic/Google equivalents
   'gpt-4o': [
     'claude-3-5-sonnet-20241022', // Similar quality
-    'gemini-1.5-pro-002',    // High capability
-    'claude-3-opus-20240229', // Premium fallback
+    'gpt-5-mini',            // Upgrade option
+    'gpt-5',                 // Premium fallback
   ],
   'gpt-4o-mini': [
     'claude-3-5-haiku-20241022', // Fast, cheap
     'gemini-2.0-flash-exp',  // Similar tier
     'gpt-4o',                // Quality upgrade
   ],
+  'gpt-5-mini': [
+    'gpt-5',                 // Upgrade to full GPT-5
+    'claude-sonnet-4-5-20250929', // Best coding model
+    'gemini-2.5-pro',        // Similar tier
+  ],
+  'gpt-5': [
+    'claude-sonnet-4-5-20250929', // Best coding alternative
+    'gemini-3-pro',          // Top overall model
+    'gpt-5.1',               // Reasoning upgrade
+  ],
+  'gpt-5.1': [
+    'claude-opus-4-5-20251101', // Similar reasoning capability
+    'gpt-5',                 // Downgrade to standard GPT-5
+    'o1',                    // Alternative reasoning model
+  ],
 
   // Anthropic Claude models -> fallback to OpenAI/Google equivalents
   'claude-3-5-sonnet-20241022': [
+    'claude-sonnet-4-5-20250929', // Upgrade to 4.5
     'gpt-4o',                // Similar quality
-    'gemini-1.5-pro-002',    // High capability
-    'claude-3-opus-20240229', // Upgrade fallback
+    'gpt-5',                 // Premium fallback
   ],
   'claude-3-5-haiku-20241022': [
     'gpt-4o-mini',           // Fast, cheap
     'gemini-2.0-flash-exp',  // Similar tier
     'gpt-4o',                // Quality upgrade
   ],
-  'claude-3-opus-20240229': [
-    'gpt-4o',                // Premium tier
-    'claude-3-5-sonnet-20241022', // Downgrade but available
-    'gemini-1.5-pro-002',    // High capability
+  'claude-sonnet-4-5-20250929': [
+    'gemini-3-pro',          // Top overall model
+    'gpt-5',                 // Premium tier
+    'claude-opus-4-5-20251101', // Upgrade fallback
+  ],
+  'claude-opus-4-5-20251101': [
+    'gpt-5.1',               // Similar reasoning capability
+    'claude-sonnet-4-5-20250929', // Downgrade but available
+    'o1',                    // Alternative reasoning model
+  ],
+
+  // Reasoning models
+  'o1-mini': [
+    'gpt-5.1',               // Better reasoning model
+    'claude-sonnet-4-5-20250929', // Best coding model
+    'gpt-5',                 // Premium fallback
+  ],
+  'o1': [
+    'claude-opus-4-5-20251101', // Similar advanced reasoning
+    'gpt-5.1',               // Alternative reasoning
+    'claude-sonnet-4-5-20250929', // Downgrade but available
   ],
 };
 
